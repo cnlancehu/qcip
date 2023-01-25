@@ -1,0 +1,15 @@
+{
+    "SecretId": "SecretId",
+    "SecretKey": "SecretKey",
+    "GetIPAPI": "LanceAPI",
+    "InstanceId": "InstanceId",
+    "InstanceRegion": "ap-hongkong",
+    "Rules": [
+        {
+            "FirewallRuleDescription": "http"
+        },
+        {
+            "FirewallRuleDescription": "ssh"
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Build",
+            "type": "python",
+            "request": "launch",
+            "module": "PyInstaller",
+            "justMyCode": true,
+            "args": [
+                "--onefile",
+                "${file}"]
+        }
+    ]
+}
