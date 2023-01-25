@@ -16,6 +16,8 @@ with open('config.json', 'r') as f:
 if 'GetIPAPI' in config:
     if config['GetIPAPI'] == "LanceAPI":
         ip = requests.get('https://get.lance.fun/ip/').text
+    elif config['GetIPAPI'] == "IPIP":
+        ip = requests.get('http://myip.ipip.net/').text.split(' ')[1][3:]
 else:
     ip = requests.get('https://get.lance.fun/ip/').text
 # Check Secret

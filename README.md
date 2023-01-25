@@ -29,18 +29,21 @@ pip install requests
 
 ```json
 // config.json
+// 请注意填写时的大小写规范
 {
-    "SecretId": "SecretId", //对应上文创建API密钥中的 SecretId
-    "SecretKey": "SecretKey", //对应上文创建API密钥中的 SecretKey
-    "GetIPAPI": "LanceAPI", //获取IP的API，目前仅支持LanceAPI (可不填)
-    "InstanceId": "InstanceId", //服务器的实例ID
-    "InstanceRegion": "ap-hongkong", //服务器的地域，可在附录参见
+    "SecretId": "SecretId", // 对应上文创建API密钥中的 SecretId
+    "SecretKey": "SecretKey", // 对应上文创建API密钥中的 SecretKey
+    "GetIPAPI": "LanceAPI", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为LanceAPI
+    "InstanceId": "InstanceId", // 服务器的实例ID
+    "InstanceRegion": "ap-hongkong", // 服务器的地域，可在附录参见
     "Rules": [
+        // 第一个策略
         {
-            "FirewallRuleDescription": "http" //填入你要修改来源的防火墙策略的描述 
+            "FirewallRuleDescription": "http" // 填入你要修改来源的防火墙策略的描述
         },
+        // 第二个策略，如此类推，可填写多个
         {
-            "FirewallRuleDescription": "ssh"
+            "FirewallRuleDescription": "ssh" // 可以填写多个
         }
     ]
 }
@@ -49,11 +52,14 @@ pip install requests
 ![image](https://user-images.githubusercontent.com/106385654/214570514-90e46714-c3a3-450f-ba37-36f8dcb9089a.png)
 即
 ```json
-"Rules": [
-    {
-        "FirewallRuleDescription": "ssh"
-    }
-]
+// config.json
+{
+    "Rules": [
+        {
+            "FirewallRuleDescription": "ssh"
+        }
+    ]
+}
 ```
 
 ### 运行脚本
@@ -91,4 +97,13 @@ WshShell.Run "cmd /c python /*程序的地址*/", 0, False
 亚太地区(首尔) ap-seoul
 华东地区(上海) ap-shanghai
 东南亚地区(新加坡) ap-singapore
+```
+
+各API地址
+```
+LanceAPI
+https://get.lance.fun/ip/
+
+IPIP
+http://myip.ipip.net/
 ```
