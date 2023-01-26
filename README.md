@@ -8,19 +8,23 @@
 通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**设置为你的IP，使服务器的重要端口只能被开您的ip访问。
 
 ## 食用教程
-### 环境要求
+### 方法一 直接下载可执行文件(推荐)
+从[Releases](https://github.com/cnlancehu/qcliteautorip/releases)中下载适合你的系统的可执行文件，解压后，请直接跳转到[更改配置文件](#更改配置文件)步骤
+
+### 方法二 使用Python运行
+**环境要求**
 > Python 3.6+ (仅在Python3.9 3.10上测试过)
 
 必要的Python Module:
 
 TencentSDK
 ```bash
-pip install tencentcloud-sdk-python
+pip3 install tencentcloud-sdk-python
 ```
 
 Requests
 ```bash
-pip install requests
+pip3 install requests
 ```
 
 ### 更改配置文件
@@ -63,8 +67,11 @@ pip install requests
 ```
 
 ### 运行脚本
+若你使用的是**方法一**，现在你可以直接运行可执行文件了
+
+若你采用的是**方法二**，请使用以下脚本运行
 ```bash
-python main.py
+python3 main.py
 ```
 这样，脚本就可以自动获取你的ip，并将指定防火墙策略的来源限制为你的ip
 
@@ -82,8 +89,9 @@ python main.py
 
 ```vbs
 // qclarip.vbs
+// 该脚本适用于方法二，如果你使用的是方法一，请适当修改后使用
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd /c python /*程序的地址*/", 0, False
+WshShell.Run "cmd /c python3 /*程序的地址*/", 0, False
 ```
 
 
