@@ -1,11 +1,11 @@
 # qcliteautorip
 自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被开发者的ip访问
 
-> 注意 该脚本支持控制腾讯云轻量应用服务器的防火墙
+> 注意 该脚本仅支持控制腾讯云轻量应用服务器的防火墙
 ### 仍在施工中
 
 ## 原理
-通过腾讯云的API以获取服务器的安全组信息，将服务器安全组的**来源**设置为你的IP，使服务器的重要端口只能被开发者的ip访问。
+通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**设置为你的IP，使服务器的重要端口只能被开您的ip访问。
 
 ## 食用教程
 ### 环境要求
@@ -31,11 +31,11 @@ pip install requests
 // config.json
 // 请注意填写时的大小写规范
 {
-    "SecretId": "SecretId", // 对应上文创建API密钥中的 SecretId
-    "SecretKey": "SecretKey", // 对应上文创建API密钥中的 SecretKey
+    "SecretId": "SecretId", // SecretId
+    "SecretKey": "SecretKey", // SecretKey
     "GetIPAPI": "LanceAPI", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为LanceAPI
     "InstanceId": "InstanceId", // 服务器的实例ID
-    "InstanceRegion": "ap-hongkong", // 服务器的地域，可在附录参见
+    "InstanceRegion": "ap-hongkong", // 服务器的地域，参见下文附录
     "Rules": [
         // 第一个策略
         {
@@ -43,12 +43,12 @@ pip install requests
         },
         // 第二个策略，如此类推，可填写多个
         {
-            "FirewallRuleDescription": "ssh" // 可以填写多个
+            "FirewallRuleDescription": "ssh" 
         }
     ]
 }
 ```
-如下图，把下图划线处的内容填入配置文件的FirewallRuleDescription对应的内容中
+如下图，把下图划线处的内容(即防火墙策略的备注)填入配置文件的FirewallRuleDescription对应的内容中，那么这条防火墙规则将会添加到自动更新的列表中
 ![image](https://user-images.githubusercontent.com/106385654/214570514-90e46714-c3a3-450f-ba37-36f8dcb9089a.png)
 即
 ```json
@@ -66,7 +66,7 @@ pip install requests
 ```bash
 python main.py
 ```
-这样，脚本就可以自动获取你的ip，并将服务器的重要端口的来源限制为你的ip
+这样，脚本就可以自动获取你的ip，并将指定防火墙策略的来源限制为你的ip
 
 但这只是一次性的，如果你的ip发生变化，你需要再次运行脚本
 
@@ -81,6 +81,7 @@ python main.py
 
 
 ```vbs
+// qclarip.vbs
 Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "cmd /c python /*程序的地址*/", 0, False
 ```

@@ -9,9 +9,14 @@ from tencentcloud.lighthouse.v20200324 import lighthouse_client, models
 needupdate = False
 checkpassing = True
 # Get config
-with open('config.json', 'r') as f:
-    config = json.load(f)
-    f.close()
+try:
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+        f.close()
+except FileNotFoundError:
+    print('Config file not found')
+    exit()
+
 # Get IP
 if 'GetIPAPI' in config:
     if config['GetIPAPI'] == "LanceAPI":
