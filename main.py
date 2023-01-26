@@ -1,22 +1,27 @@
 import requests
 import json
+from sys import exit
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.lighthouse.v20200324 import lighthouse_client, models
 
+# Init
 needupdate = False
 checkpassing = True
 # Get config
 try:
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-        f.close()
+    open('config.json', 'r')
 except FileNotFoundError:
     print('Config file not found')
     exit()
-
+except FileExistsError:
+    print('Config file exists error')
+    exit()
+with open('config.json', 'r') as f:
+    config = json.load(f)
+    f.close()
 # Get IP
 if 'GetIPAPI' in config:
     if config['GetIPAPI'] == "LanceAPI":
@@ -56,14 +61,14 @@ if checkpassing == False:
     exit()
 
 
-
 # Get Firewall Rules
 try:
     httpProfile = HttpProfile()
     httpProfile.endpoint = "lighthouse.tencentcloudapi.com"
     clientProfile = ClientProfile()
     clientProfile.httpProfile = httpProfile
-    client = lighthouse_client.LighthouseClient(cred, InstanceRegion, clientProfile)
+    client = lighthouse_client.LighthouseClient(
+        cred, InstanceRegion, clientProfile)
     req = models.DescribeFirewallRulesRequest()
     params = {
         "InstanceId": InstanceId,
@@ -76,7 +81,6 @@ try:
 except TencentCloudSDKException as err:
     print(err)
     exit()
-
 
 
 # Modify Firewall Rules
