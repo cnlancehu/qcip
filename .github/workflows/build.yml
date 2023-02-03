@@ -29,9 +29,6 @@ jobs:
           pip3 install tencentcloud-sdk-python
       - name: Build
         run: |
-          mv upx/upx upx.1
-          rm -rf upx
-          mv upx.1 upx
           python3 -m PyInstaller main.py -F -i icon.ico
           mv dist/main dist/qcip
           mv config.json dist/config.json
