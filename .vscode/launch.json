@@ -16,7 +16,7 @@
             "module": "PyInstaller",
             "justMyCode": true,
             "args": [
-                "--onefile",
+                "-F",
                 "${file}"]
         }
     ]

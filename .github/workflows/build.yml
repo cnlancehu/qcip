@@ -15,7 +15,8 @@ jobs:
   Linux:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
@@ -28,6 +29,7 @@ jobs:
           pip3 install tencentcloud-sdk-python
       - name: Build
         run: |
+          mv upx/upx upx
           python3 -m PyInstaller main.py -F -i icon.ico
           mv dist/main dist/qcip
           mv config.json dist/config.json
@@ -39,7 +41,8 @@ jobs:
   Windows:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
@@ -53,6 +56,7 @@ jobs:
           pip3 install pillow
       - name: Build
         run: |
+          mv upx/upx.exe upx.exe
           python3 -m PyInstaller main.py -F -i icon.ico
           mv dist/main.exe dist/qcip.exe
           mv config.json dist/config.json
@@ -64,7 +68,8 @@ jobs:
   MacOS:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:

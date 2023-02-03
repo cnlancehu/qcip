@@ -5,26 +5,25 @@
 ### 仍在施工中
 
 ## 原理
-通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**设置为你的IP，使服务器的重要端口只能被开您的ip访问。
+通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**ip(**也就是运行这个脚本的电脑的ip**)，使服务器的重要端口只能被开您的ip访问。
 
 ## 食用教程
-### 方法一 直接下载可执行文件(推荐)
-从[Releases](https://github.com/cnlancehu/qcliteautorip/releases)中下载适合你的系统的可执行文件，解压后，请直接跳转到[更改配置文件](#更改配置文件)步骤
+### 安装
+#### 方法一 直接下载可执行文件(推荐)
+从[Releases](https://github.com/cnlancehu/qcliteautorip/releases)中下载适合你的系统的可执行文件，解压
 
-### 方法二 使用Python运行
+若没有适合你的系统的二进制文件，请使用[方法二](#方法二-使用python运行)或[自行构建](#自行构建)
+#### 方法二 使用Python运行
 **环境要求**
-> Python 3.6+ (仅在Python3.9 3.10上测试过)
+> Python 3.6+ (建议使用 3.10)
 
 必要的Python Module:
 
-TencentSDK
 ```bash
+# 腾讯云SDK
 pip3 install tencentcloud-sdk-python
-```
-
-Requests
-```bash
-pip3 install requests
+# Requests
+pip3 install requests 
 ```
 
 ### 更改配置文件
@@ -116,3 +115,34 @@ https://get.lance.fun/ip/
 IPIP
 http://myip.ipip.net/
 ```
+
+### 自行构建
+
+#### 环境要求
+> Python 3.10
+
+必要的Python Module
+
+```bash
+pip3 install pyinstaller
+pip3 install requests
+pip3 install tencentcloud-sdk-python
+pip3 install pillow
+```
+
+#### 构建
+
+克隆本仓库到本地
+```bash
+git clone https://github.com/cnlancehu/qcliteautorip.git
+cd qcliteautorip
+```
+
+构建
+```bash
+python3 -m PyInstaller main.py -F -i icon.ico
+mv dist/main.exe dist/qcip.exe
+mv config.json dist/config.json
+```
+
+二进制文件和配置文件将会生成在 `dist` 文件夹中

@@ -10,16 +10,21 @@ from tencentcloud.lighthouse.v20200324 import lighthouse_client, models
 # Init
 needupdate = False
 checkpassing = True
+
 # Get config
 try:
-    open('config.json', 'r')
+    configpath
+except NameError:
+    configpath = 'config.json' 
+try:
+    open(configpath, 'r')
 except FileNotFoundError:
     print('Config file not found')
     exit()
 except FileExistsError:
     print('Config file exists error')
     exit()
-with open('config.json', 'r') as f:
+with open(configpath, 'r') as f:
     config = json.load(f)
     f.close()
 # Get IP
