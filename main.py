@@ -7,9 +7,11 @@ from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.lighthouse.v20200324 import lighthouse_client, models
 
+
 # Init
 needupdate = False
 checkpassing = True
+
 
 # Get config
 try:
@@ -17,14 +19,23 @@ try:
 except NameError:
     configpath = 'config.json' 
 try:
-    open(configpath, 'r')
+    json.load(open(configpath, 'r', encoding='utf-8'))
 except FileNotFoundError:
     print('Config file not found')
     exit()
 except FileExistsError:
     print('Config file exists error')
     exit()
-with open(configpath, 'r') as f:
+except json.decoder.JSONDecodeError:
+    print('Incorrect configuration file format')
+    exit()
+except UnicodeDecodeError:
+    print('Incorrect configuration file, it should be a text file using utf-8 encoding')
+    exit()
+except Exception as e:
+    print('Unknown error: ' + str(e))
+    exit()
+with open(configpath, 'r', encoding='utf-8') as f:
     config = json.load(f)
     f.close()
 # Get IP
@@ -46,24 +57,23 @@ elif 'SecretKey' not in config:
     print('SecretKey not found')
     checkpassing = False
 # Check InstanceID
-elif 'InstanceId' not in config:
+if 'InstanceId' not in config:
     print('InstanceID not found')
     checkpassing = False
 # Check Region
-elif 'InstanceRegion' not in config:
+if 'InstanceRegion' not in config:
     print('InstanceRegion not found')
     checkpassing = False
-elif 'Rules' not in config:
+if 'Rules' not in config:
     print('Rules not found')
     checkpassing = False
-else:
-    InstanceId = config['InstanceId']
-    InstanceRegion = config['InstanceRegion']
-    cred = credential.Credential(config['SecretId'], config['SecretKey'])
-    rules = json.dumps(config['Rules'])
-    print('Config load successfully')
 if checkpassing == False:
     exit()
+InstanceId = config['InstanceId']
+InstanceRegion = config['InstanceRegion']
+cred = credential.Credential(config['SecretId'], config['SecretKey'])
+rules = json.dumps(config['Rules'])
+print('Config load successfully')
 
 
 # Get Firewall Rules
