@@ -27,6 +27,7 @@ jobs:
           pip3 install pyinstaller
           pip3 install requests
           pip3 install tencentcloud-sdk-python
+          pip3 install pillow
       - name: Build
         run: |
           python3 -m PyInstaller main.py -F -i icon.ico
@@ -35,7 +36,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-linux-x86_64
+          name: qcip-${{ github.event.inputs.version }}-linux-x64
           path: dist/*
   Windows:
     runs-on: windows-2022
@@ -55,14 +56,13 @@ jobs:
           pip3 install pillow
       - name: Build
         run: |
-          mv upx/upx.exe upx.exe
-          python3 -m PyInstaller main.py -F -i icon.ico
+          python3 -m PyInstaller main.py -F -i icon.ico --upx-dir upx
           mv dist/main.exe dist/qcip.exe
           mv config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-windows-x86_64
+          name: qcip-${{ github.event.inputs.version }}-windows-x64
           path: dist/*
   MacOS:
     runs-on: macos-12
@@ -79,6 +79,7 @@ jobs:
           pip3 install pyinstaller
           pip3 install requests
           pip3 install tencentcloud-sdk-python
+          pip3 install pillow
       - name: Build
         run: |
           python3 -m PyInstaller main.py -F -i icon.ico
@@ -87,5 +88,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-macos-x86_64
+          name: qcip-${{ github.event.inputs.version }}-macos-x64
           path: dist/*

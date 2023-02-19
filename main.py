@@ -41,11 +41,26 @@ with open(configpath, 'r', encoding='utf-8') as f:
 # Get IP
 if 'GetIPAPI' in config:
     if config['GetIPAPI'] == "LanceAPI":
-        ip = requests.get('https://get.lance.fun/ip/').text
+        try:
+            ip = requests.get('https://get.lance.fun/ip/').text
+        except Exception as e:
+            print('This api may not work anymore, please replace it and try again')
+            print('Detail: ' + str(e))
+            exit()
     elif config['GetIPAPI'] == "IPIP":
-        ip = requests.get('http://myip.ipip.net/').text.split(' ')[1][3:]
+        try:
+            ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
+        except Exception as e:
+            print('This api may not work anymore, please replace it and try again')
+            print('Detail: ' + str(e))
+            exit()
 else:
-    ip = requests.get('https://get.lance.fun/ip/').text
+    try:
+        ip = requests.get('https://get.lance.fun/ip/').text
+    except Exception as e:
+        print('This api may not work anymore, please replace it and try again')
+        print('Detail: ' + str(e))
+        exit()
 # Check Secret
 if 'SecretId' not in config and 'SecretKey' not in config:
     print('Both SecretId and SecretKey not found')
@@ -96,7 +111,9 @@ try:
 except TencentCloudSDKException as err:
     print(err)
     exit()
-
+except Exception as e:
+    print('Unknown error: ' + str(e))
+    exit()
 
 # Modify Firewall Rules
 for a in range(0, len(resp)):
@@ -129,6 +146,9 @@ if needupdate == True:
 
     except TencentCloudSDKException as err:
         print(err)
+        exit()
+    except Exception as e:
+        print('Unknown error: ' + str(e))
         exit()
 elif needupdate == False:
     print("IP相同 无需更新")
