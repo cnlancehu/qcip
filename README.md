@@ -1,11 +1,11 @@
 # qcliteautorip
 自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被开发者的ip访问
 
-> 注意 该脚本仅支持控制腾讯云轻量应用服务器的防火墙
+> **注意** 该脚本仅支持控制腾讯云轻量应用服务器的防火墙
 ### 仍在施工中
 
 ## 原理
-通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**ip(**也就是运行这个脚本的电脑的ip**)，使服务器的重要端口只能被开您的ip访问。
+通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**ip限制为运行该程序的设备的公网ip，使服务器的重要端口只能被开您的ip访问。
 
 ## 食用教程
 ### 安装
@@ -36,7 +36,7 @@ pip3 install requests
 {
     "SecretId": "SecretId", // SecretId
     "SecretKey": "SecretKey", // SecretKey
-    "GetIPAPI": "LanceAPI", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为LanceAPI
+    "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为IPIP， 中国大陆用户请使用 IPIP
     "InstanceId": "InstanceId", // 服务器的实例ID
     "InstanceRegion": "ap-hongkong", // 服务器的地域，参见下文附录
     "Rules": [
@@ -79,9 +79,9 @@ python3 main.py
 ### 开机启动
 另外，你也可以把程序文件放入电脑的启动项中，这样，每次开机时，脚本就会自动运行
 
-但请注意不要把程序文件拖入启动项文件夹中，因为脚本需要config.json才能运作
+你可以在下面的目录(启动项文件夹)中添加该脚本的**快捷方式**
 
-你可以在下面的目录(启动项文件夹)中添加该脚本
+> **注意** 不要在启动文件夹中直接放入程序文件，因为需要配置文件配合其运行
 
 `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`
 
@@ -109,11 +109,11 @@ WshShell.Run "cmd /c python3 /*程序的地址*/", 0, False
 
 各API地址
 ```
-LanceAPI
+LanceAPI // 推荐在海外使用
 https://get.lance.fun/ip/
 
-IPIP
-http://myip.ipip.net/
+IPIP // 推荐在中国大陆使用
+http://myip.ipip.net/ip
 ```
 
 ### 自行构建

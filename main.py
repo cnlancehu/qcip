@@ -44,21 +44,21 @@ if 'GetIPAPI' in config:
         try:
             ip = requests.get('https://get.lance.fun/ip/').text
         except Exception as e:
-            print('This api may not work anymore, please replace it and try again')
+            print('This api may not work anymore, please use another and try again')
             print('Detail: ' + str(e))
             exit()
     elif config['GetIPAPI'] == "IPIP":
         try:
             ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
         except Exception as e:
-            print('This api may not work anymore, please replace it and try again')
+            print('This api may not work anymore, please use another and try again')
             print('Detail: ' + str(e))
             exit()
 else:
     try:
-        ip = requests.get('https://get.lance.fun/ip/').text
+        ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
     except Exception as e:
-        print('This api may not work anymore, please replace it and try again')
+        print('This api may not work anymore, please use another and try again')
         print('Detail: ' + str(e))
         exit()
 # Check Secret

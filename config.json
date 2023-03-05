@@ -1,7 +1,7 @@
 {
     "SecretId": "SecretId",
     "SecretKey": "SecretKey",
-    "GetIPAPI": "LanceAPI",
+    "GetIPAPI": "IPIP",
     "InstanceId": "InstanceId",
     "InstanceRegion": "ap-hongkong",
     "Rules": [
