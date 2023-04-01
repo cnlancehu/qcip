@@ -178,7 +178,7 @@ def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
         clientProfile = ClientProfile()
         clientProfile.httpProfile = httpProfile
         client = lighthouse_client.LighthouseClient(
-            cred, "ap-hongkong", clientProfile)
+            cred, InstanceRegion, clientProfile)
         req = models.ModifyFirewallRulesRequest()
         params = json.dumps({
             "InstanceId": InstanceId,
