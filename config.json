@@ -3,7 +3,7 @@
     "SecretKey": "SecretKey",
     "GetIPAPI": "IPIP",
     "InstanceId": "InstanceId",
-    "InstanceRegion": "ap-hongkong",
+    "InstanceRegion": "InstanceRegion",
     "Rules": [
         {
             "FirewallRuleDescription": "http"
