@@ -31,7 +31,7 @@ jobs:
       - name: Build
         run: |
           python3 -m PyInstaller main.py -F
-          cp dist/main dist/qcip
+          mv dist/main dist/qcip
           cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
@@ -57,7 +57,7 @@ jobs:
       - name: Build
         run: |
           python3 -m PyInstaller main.py -F --upx-dir upx
-          cp dist/main.exe dist/qcip.exe
+          mv dist/main.exe dist/qcip.exe
           cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
@@ -83,7 +83,7 @@ jobs:
       - name: Build
         run: |
           python3 -m PyInstaller main.py -F
-          cp dist/main dist/qcip
+          mv dist/main dist/qcip
           cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
