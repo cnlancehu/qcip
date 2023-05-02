@@ -30,9 +30,9 @@ jobs:
           pip3 install pillow
       - name: Build
         run: |
-          python3 -m PyInstaller main.py -F -i icon.ico
-          mv dist/main dist/qcip
-          mv config.json dist/config.json
+          python3 -m PyInstaller main.py -F
+          cp dist/main dist/qcip
+          cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
@@ -56,9 +56,9 @@ jobs:
           pip3 install pillow
       - name: Build
         run: |
-          python3 -m PyInstaller main.py -F -i icon.ico --upx-dir upx
-          mv dist/main.exe dist/qcip.exe
-          mv config.json dist/config.json
+          python3 -m PyInstaller main.py -F --upx-dir upx
+          cp dist/main.exe dist/qcip.exe
+          cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
@@ -82,11 +82,27 @@ jobs:
           pip3 install pillow
       - name: Build
         run: |
-          python3 -m PyInstaller main.py -F -i icon.ico
-          mv dist/main dist/qcip
-          mv config.json dist/config.json
+          python3 -m PyInstaller main.py -F
+          cp dist/main dist/qcip
+          cp config.json dist/config.json
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
           name: qcip-${{ github.event.inputs.version }}-macos-x64
           path: dist/*
+  Source:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Wrapping
+        run: |
+          mkdir dist
+          cp main.py dist/main.py
+          cp config.json dist/config.json
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: qcip-${{ github.event.inputs.version }}-source
+          path: dist/*
+

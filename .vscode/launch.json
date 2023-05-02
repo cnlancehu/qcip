@@ -19,9 +19,7 @@
                 "-F",
                 "${file}",
                 "--upx-dir",
-                "upx",
-                "-i",
-                "icon.ico"
+                "upx"
             ]
         }
     ]

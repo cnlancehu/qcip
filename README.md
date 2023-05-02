@@ -1,11 +1,13 @@
-# qcliteautorip
+# qcliteautorip 
+
+腾讯云轻量服务器防火墙来源自动设置脚本
+
 自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被开发者的ip访问
 
-> **注意** 该脚本仅支持控制腾讯云轻量应用服务器的防火墙
-### 仍在施工中
+> **注意** 该脚本仅支持控制腾讯云**轻量应用服务器**的防火墙
 
 ## 原理
-通过腾讯云的API以获取服务器的安全组信息，将服务器指定防火墙策略的**来源**ip限制为运行该程序的设备的公网ip，使服务器的重要端口只能被开您的ip访问。
+从配置文件中读取SecretId、SecretKey、InstanceId等信息以访问腾讯云API，然后获取本机的IP地址并检查防火墙规则是否需要更新。如果IP发生更改，它会修改适当的防火墙规则，以确保实例的指定端口只允许本机地址访问。 
 
 ## 食用教程
 ### 安装
@@ -38,11 +40,11 @@ pip3 install requests
     "SecretKey": "SecretKey", // SecretKey
     "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为IPIP， 中国大陆用户请使用 IPIP
     "InstanceId": "InstanceId", // 服务器的实例ID
-    "InstanceRegion": "ap-hongkong", // 服务器的地域，参见下文附录
+    "InstanceRegion": "InstanceRegion", // 服务器的地域，参见下文附录
     "Rules": [
         // 第一个策略
         {
-            "FirewallRuleDescription": "http" // 填入你要修改来源的防火墙策略的描述
+            "FirewallRuleDescription": "http" // 填入你要修改来源为本机IP的防火墙策略的描述
         },
         // 第二个策略，如此类推，可填写多个
         {
@@ -59,7 +61,10 @@ pip3 install requests
 {
     "Rules": [
         {
-            "FirewallRuleDescription": "ssh"
+            "FirewallRuleDescription": "http" //第一个防火墙规则
+        },
+        {
+            "FirewallRuleDescription": "ssh" //第二个防火墙规则
         }
     ]
 }
@@ -67,6 +72,9 @@ pip3 install requests
 
 ### 运行脚本
 若你使用的是**方法一**，现在你可以直接运行可执行文件了
+> **注意** 若你使用 桌面系统 直接双击打开脚本，会出现cmd窗口和闪退现象，这是正常的，但你无法看到程序的运行结果
+> 
+> 如需查看运行结果，请使用命令行运行
 
 若你采用的是**方法二**，请使用以下脚本运行
 ```bash
@@ -77,7 +85,7 @@ python3 main.py
 但这只是一次性的，如果你的ip发生变化，你需要再次运行脚本
 
 ### 开机启动
-另外，你也可以把程序文件放入电脑的启动项中，这样，每次开机时，脚本就会自动运行
+你也可以把程序文件放入电脑的启动项中，这样，每次开机时，脚本就会自动运行
 
 你可以在下面的目录(启动项文件夹)中添加该脚本的**快捷方式**
 
@@ -87,7 +95,7 @@ python3 main.py
 
 
 ```vbs
-// qclarip.vbs
+// qcip.vbs
 // 该脚本适用于方法二，如果你使用的是方法一，请适当修改后使用
 Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "cmd /c python3 /*程序的地址*/", 0, False
@@ -110,7 +118,7 @@ WshShell.Run "cmd /c python3 /*程序的地址*/", 0, False
 各API地址
 ```
 LanceAPI // 推荐在海外使用
-https://get.lance.fun/ip/
+https://api.lance.fun/ip/
 
 IPIP // 推荐在中国大陆使用
 http://myip.ipip.net/ip
@@ -140,9 +148,17 @@ cd qcliteautorip
 
 构建
 ```bash
-python3 -m PyInstaller main.py -F -i icon.ico
-mv dist/main.exe dist/qcip.exe
-mv config.json dist/config.json
+python3 -m PyInstaller main.py -F
+cp dist/main.exe dist/qcip.exe
+cp config.json dist/config.json
 ```
-
 二进制文件和配置文件将会生成在 `dist` 文件夹中
+
+
+#### Q & A
+
+1. > Q: 为什么不能让用户自己指定获取IP的API地址?
+
+   > A: 由于每个API的返回格式不同，所以需要对每个API进行适配，你可以适当修改代码以适配新的API，或者提交PR来让我们支持更多的API
+
+

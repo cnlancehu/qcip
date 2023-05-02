@@ -62,7 +62,7 @@ def get_ip(config):
     if 'GetIPAPI' in config:
         if config['GetIPAPI'] == "LanceAPI":
             try:
-                ip = requests.get('https://get.lance.fun/ip/').text
+                ip = requests.get('https://api.lance.fun/ip/').text
             except Exception as e:
                 print('This api may not work anymore, please use another and try again')
                 print('Detail: ' + str(e))
