@@ -6,6 +6,8 @@
 
 > **注意** 该脚本仅支持控制腾讯云**轻量应用服务器**的防火墙
 
+**仍在迭代中**
+
 ## 原理
 从配置文件中读取SecretId、SecretKey、InstanceId等信息以访问腾讯云API，然后获取本机的IP地址并检查防火墙规则是否需要更新。如果IP发生更改，它会修改适当的防火墙规则，以确保实例的指定端口只允许本机地址访问。 
 
@@ -36,8 +38,8 @@ pip3 install requests
 // config.json
 // 请注意填写时的大小写规范
 {
-    "SecretId": "SecretId", // SecretId
-    "SecretKey": "SecretKey", // SecretKey
+    "SecretId": "SecretId", // 腾讯云API密钥ID
+    "SecretKey": "SecretKey", // 腾讯云API密钥Key
     "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为IPIP， 中国大陆用户请使用 IPIP
     "InstanceId": "InstanceId", // 服务器的实例ID
     "InstanceRegion": "InstanceRegion", // 服务器的地域，参见下文附录
@@ -73,12 +75,24 @@ pip3 install requests
 ### 运行脚本
 若你使用的是**方法一**，现在你可以直接运行可执行文件了
 > **注意** 若你使用 桌面系统 直接双击打开脚本，会出现cmd窗口和闪退现象，这是正常的，但你无法看到程序的运行结果
-> 
-> 如需查看运行结果，请使用命令行运行
+
+你也可以使用命令行运行以查看运行结果
+
+```bash
+qcip.exe config.json # Windows
+
+qcip config.json # Linux & MacOS
+
+{程序路径} {配置文件路径(可选)}
+```
+
 
 若你采用的是**方法二**，请使用以下脚本运行
 ```bash
-python3 main.py
+python3 main.py config.json
+
+python3 {python文件路径} {配置文件路径(可选)}
+
 ```
 这样，脚本就可以自动获取你的ip，并将指定防火墙策略的来源限制为你的ip
 
@@ -135,7 +149,6 @@ http://myip.ipip.net/ip
 pip3 install pyinstaller
 pip3 install requests
 pip3 install tencentcloud-sdk-python
-pip3 install pillow
 ```
 
 #### 构建

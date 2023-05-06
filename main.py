@@ -1,6 +1,6 @@
 import requests
 import json
-from sys import exit
+import sys
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -26,32 +26,33 @@ def get_config(configpath):
         Exception: If there is an unknown error.
     """
     try:
-        with open(configpath, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        return config
+        json.load(open(configpath, 'r', encoding='utf-8'))
     except FileNotFoundError:
         print('Config file not found')
-        exit()
+        sys.exit()
     except FileExistsError:
         print('Config file exists error')
-        exit()
+        sys.exit()
     except json.decoder.JSONDecodeError:
         print('Incorrect configuration file format')
-        exit()
+        sys.exit()
     except UnicodeDecodeError:
         print('Incorrect configuration file, it should be a text file using utf-8 encoding')
-        exit()
+        sys.exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        exit()
+        sys.exit()
+    else:
+        config = json.load(open(configpath, 'r', encoding='utf-8'))
+    return config
 
 
-def get_ip(config):
+def get_ip(api):
     """
     Get the IP address of the current machine.
 
     Args:
-        config (dict): The configuration dictionary.
+        api (str): The API used to get the IP address.
 
     Returns:
         str: The IP address of the current machine.
@@ -59,28 +60,27 @@ def get_ip(config):
     Raises:
         Exception: If there is an unknown error.
     """
-    if 'GetIPAPI' in config:
-        if config['GetIPAPI'] == "LanceAPI":
-            try:
-                ip = requests.get('https://api.lance.fun/ip/').text
-            except Exception as e:
-                print('This api may not work anymore, please use another and try again')
-                print('Detail: ' + str(e))
-                exit()
-        elif config['GetIPAPI'] == "IPIP":
-            try:
-                ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
-            except Exception as e:
-                print('This api may not work anymore, please use another and try again')
-                print('Detail: ' + str(e))
-                exit()
+    if api == "LanceAPI":
+        try:
+            ip = requests.get('https://api.lance.fun/ip/').text
+        except Exception as e:
+            print('This api may not work anymore, please use another and try again')
+            print('Detail: ' + str(e))
+            sys.exit()
+    elif api == "IPIP":
+        try:
+            ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
+        except Exception as e:
+            print('This api may not work anymore, please use another and try again')
+            print('Detail: ' + str(e))
+            sys.exit()
     else:
         try:
             ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
         except Exception as e:
             print('This api may not work anymore, please use another and try again')
             print('Detail: ' + str(e))
-            exit()
+            sys.exit()
     return ip
 
 
@@ -114,7 +114,7 @@ def check_config(config):
         print('Rules not found')
         checkpassing = False
     if not checkpassing:
-        exit()
+        sys.exit()
     return checkpassing
 
 
@@ -152,10 +152,10 @@ def get_firewall_rules(cred, InstanceRegion, InstanceId):
         return resp
     except TencentCloudSDKException as err:
         print(err)
-        exit()
+        sys.exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        exit()
+        sys.exit()
 
 
 def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
@@ -192,10 +192,10 @@ def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
 
     except TencentCloudSDKException as err:
         print(err)
-        exit()
+        sys.exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        exit()
+        sys.exit()
 
 
 def main():
@@ -206,7 +206,12 @@ def main():
     needupdate = False
 
     # Get config
-    config = get_config('config.json')
+    try:
+        sys.argv[1]
+    except IndexError:
+        config = get_config('config.json')
+    else:
+        config = get_config(sys.argv[1])
     check_config(config)
     InstanceId = config['InstanceId']
     InstanceRegion = config['InstanceRegion']
@@ -215,7 +220,12 @@ def main():
     print('Config load successfully')
 
     # Get IP
-    ip = get_ip(config)
+    try:
+        config['GetIPAPI']
+    except KeyError:
+        ip = get_ip('IPIP')
+    else:
+        ip = get_ip(config['GetIPAPI'])
 
     # Get Firewall Rules
     resp = get_firewall_rules(cred, InstanceRegion, InstanceId)
