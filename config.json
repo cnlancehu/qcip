@@ -4,6 +4,7 @@
     "GetIPAPI": "IPIP",
     "InstanceId": "InstanceId",
     "InstanceRegion": "InstanceRegion",
+    "MaxRetries": "3",
     "Rules": [
         {
             "FirewallRuleDescription": "http"

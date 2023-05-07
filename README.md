@@ -43,6 +43,7 @@ pip3 install requests
     "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为IPIP， 中国大陆用户请使用 IPIP
     "InstanceId": "InstanceId", // 服务器的实例ID
     "InstanceRegion": "InstanceRegion", // 服务器的地域，参见下文附录
+    "MaxRetries": "3", // 获取IP地址时出现错误的最大重试次数
     "Rules": [
         // 第一个策略
         {

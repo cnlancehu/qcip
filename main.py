@@ -1,6 +1,7 @@
 import requests
 import json
 import sys
+from time import sleep
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -47,12 +48,13 @@ def get_config(configpath):
     return config
 
 
-def get_ip(api):
+def get_ip(api, maxretries=3): 
     """
     Get the IP address of the current machine.
 
     Args:
         api (str): The API used to get the IP address.
+        maxretries (int): The maximum number of retries.
 
     Returns:
         str: The IP address of the current machine.
@@ -60,28 +62,23 @@ def get_ip(api):
     Raises:
         Exception: If there is an unknown error.
     """
-    if api == "LanceAPI":
+    for i in range(maxretries):
         try:
-            ip = requests.get('https://api.lance.fun/ip/').text
+            if api == "LanceAPI":
+                ip = requests.get('https://api.lance.fun/ip/').text 
+            elif api == "IPIP":
+                ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
+            else:
+                ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
         except Exception as e:
-            print('This api may not work anymore, please use another and try again')
-            print('Detail: ' + str(e))
-            sys.exit()
-    elif api == "IPIP":
-        try:
-            ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
-        except Exception as e:
-            print('This api may not work anymore, please use another and try again')
-            print('Detail: ' + str(e))
-            sys.exit()
-    else:
-        try:
-            ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
-        except Exception as e:
-            print('This api may not work anymore, please use another and try again')
-            print('Detail: ' + str(e))
-            sys.exit()
+            print(f'IP API call failed, retrying {i+1} time...')
+            if i == maxretries - 1:
+                print('Max retries exceeded, try to change an api')
+                sys.exit()
+            sleep(0.5)
+            continue
     return ip
+
 
 
 def check_config(config):
@@ -213,6 +210,10 @@ def main():
     else:
         config = get_config(sys.argv[1])
     check_config(config)
+    try:
+        maxretries = int(config['MaxRetries'])
+    except KeyError:
+        maxretries = 3
     InstanceId = config['InstanceId']
     InstanceRegion = config['InstanceRegion']
     cred = credential.Credential(config['SecretId'], config['SecretKey'])
@@ -223,9 +224,9 @@ def main():
     try:
         config['GetIPAPI']
     except KeyError:
-        ip = get_ip('IPIP')
+        ip = get_ip('IPIP', maxretries)
     else:
-        ip = get_ip(config['GetIPAPI'])
+        ip = get_ip(config['GetIPAPI'], maxretries)
 
     # Get Firewall Rules
     resp = get_firewall_rules(cred, InstanceRegion, InstanceId)
