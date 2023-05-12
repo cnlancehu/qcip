@@ -1,5 +1,8 @@
 # qcliteautorip 
 
+### **仍处于开发阶段，版本更新可能出现较大变动**
+
+
 腾讯云轻量服务器防火墙来源自动设置脚本
 
 自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被开发者的ip访问
@@ -44,32 +47,17 @@ pip3 install requests
     "InstanceId": "InstanceId", // 服务器的实例ID
     "InstanceRegion": "InstanceRegion", // 服务器的地域，参见下文附录
     "MaxRetries": "3", // 获取IP地址时出现错误的最大重试次数
-    "Rules": [
-        // 第一个策略
-        {
-            "FirewallRuleDescription": "http" // 填入你要修改来源为本机IP的防火墙策略的描述
-        },
-        // 第二个策略，如此类推，可填写多个
-        {
-            "FirewallRuleDescription": "ssh" 
-        }
-    ]
+    "Rules": ["%第一个防火墙配置的备注%", "%第二个%"] // 需要修改的防火墙策略的备注，可填写多个
 }
 ```
-如下图，把下图划线处的内容(即防火墙策略的备注)填入配置文件的FirewallRuleDescription对应的内容中，那么这条防火墙规则将会添加到自动更新的列表中
+如下图，把下图划线处的内容(即防火墙策略的备注)填入配置文件的 Rules 对应的内容中，那么这条防火墙规则将会添加到自动更新的列表中
 ![image](https://user-images.githubusercontent.com/106385654/214570514-90e46714-c3a3-450f-ba37-36f8dcb9089a.png)
 即
 ```json
 // config.json
 {
-    "Rules": [
-        {
-            "FirewallRuleDescription": "http" //第一个防火墙规则
-        },
-        {
-            "FirewallRuleDescription": "ssh" //第二个防火墙规则
-        }
-    ]
+    "Rules": ["ssh"]
+    // 在此处以列表形式填入防火墙策略的备注
 }
 ```
 
@@ -84,7 +72,7 @@ qcip.exe config.json # Windows
 
 qcip config.json # Linux & MacOS
 
-{程序路径} {配置文件路径(可选)}
+{程序路径} {配置文件路径(可选，默认为 config.json)}
 ```
 
 
@@ -92,7 +80,7 @@ qcip config.json # Linux & MacOS
 ```bash
 python3 main.py config.json
 
-python3 {python文件路径} {配置文件路径(可选)}
+python3 {python文件路径} {配置文件路径(可选，默认为 config.json)}
 
 ```
 这样，脚本就可以自动获取你的ip，并将指定防火墙策略的来源限制为你的ip
@@ -103,8 +91,6 @@ python3 {python文件路径} {配置文件路径(可选)}
 你也可以把程序文件放入电脑的启动项中，这样，每次开机时，脚本就会自动运行
 
 你可以在下面的目录(启动项文件夹)中添加该脚本的**快捷方式**
-
-> **注意** 不要在启动文件夹中直接放入程序文件，因为需要配置文件配合其运行
 
 `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`
 
@@ -150,6 +136,7 @@ http://myip.ipip.net/ip
 pip3 install pyinstaller
 pip3 install requests
 pip3 install tencentcloud-sdk-python
+pip3 install pillow
 ```
 
 #### 构建

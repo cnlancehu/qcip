@@ -5,12 +5,5 @@
     "InstanceId": "InstanceId",
     "InstanceRegion": "InstanceRegion",
     "MaxRetries": "3",
-    "Rules": [
-        {
-            "FirewallRuleDescription": "http"
-        },
-        {
-            "FirewallRuleDescription": "ssh"
-        }
-    ]
+    "Rules": ["http","ssh"]
 }

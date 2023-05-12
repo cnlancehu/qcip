@@ -234,7 +234,7 @@ def main():
     # Modify Firewall Rules
     for a in range(len(resp)):
         for b in range(len(config['Rules'])):
-            if resp[a].FirewallRuleDescription == config['Rules'][b]['FirewallRuleDescription']:
+            if resp[a].FirewallRuleDescription == config['Rules'][b]:
                 if resp[a].CidrBlock == ip:
                     pass
                 else:
