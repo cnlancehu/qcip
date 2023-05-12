@@ -48,7 +48,7 @@ def get_config(configpath):
     return config
 
 
-def get_ip(api, maxretries=3): 
+def get_ip(api, maxretries=3):
     """
     Get the IP address of the current machine.
 
@@ -65,11 +65,13 @@ def get_ip(api, maxretries=3):
     for i in range(maxretries):
         try:
             if api == "LanceAPI":
-                ip = requests.get('https://api.lance.fun/ip/').text 
+                ip = requests.get('https://api.lance.fun/ip/').text
             elif api == "IPIP":
-                ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
+                ip = json.loads(requests.get(
+                    'https://myip.ipip.net/ip').text)['ip']
             else:
-                ip = json.loads(requests.get('https://myip.ipip.net/ip').text)['ip']
+                ip = json.loads(requests.get(
+                    'https://myip.ipip.net/ip').text)['ip']
         except Exception as e:
             print(f'IP API call failed, retrying {i+1} time...')
             if i == maxretries - 1:
@@ -78,7 +80,6 @@ def get_ip(api, maxretries=3):
             sleep(0.5)
             continue
     return ip
-
 
 
 def check_config(config):
@@ -199,52 +200,59 @@ def main():
     """
     The main function.
     """
-    # Init
-    needupdate = False
-
-    # Get config
     try:
-        sys.argv[1]
-    except IndexError:
-        config = get_config('config.json')
-    else:
-        config = get_config(sys.argv[1])
-    check_config(config)
-    try:
-        maxretries = int(config['MaxRetries'])
-    except KeyError:
-        maxretries = 3
-    InstanceId = config['InstanceId']
-    InstanceRegion = config['InstanceRegion']
-    cred = credential.Credential(config['SecretId'], config['SecretKey'])
-    json.dumps(config['Rules'])
-    print('Config load successfully')
+        # Init
+        needupdate = False
 
-    # Get IP
-    try:
-        config['GetIPAPI']
-    except KeyError:
-        ip = get_ip('IPIP', maxretries)
-    else:
-        ip = get_ip(config['GetIPAPI'], maxretries)
+        # Get config
+        try:
+            sys.argv[1]
+        except IndexError:
+            config = get_config('config.json')
+        else:
+            config = get_config(sys.argv[1])
+        check_config(config)
+        try:
+            maxretries = int(config['MaxRetries'])
+        except KeyError:
+            maxretries = 3
+        InstanceId = config['InstanceId']
+        InstanceRegion = config['InstanceRegion']
+        cred = credential.Credential(config['SecretId'], config['SecretKey'])
+        json.dumps(config['Rules'])
+        print('Config load successfully')
 
-    # Get Firewall Rules
-    resp = get_firewall_rules(cred, InstanceRegion, InstanceId)
+        # Get IP
+        try:
+            config['GetIPAPI']
+        except KeyError:
+            ip = get_ip('IPIP', maxretries)
+        else:
+            ip = get_ip(config['GetIPAPI'], maxretries)
 
-    # Modify Firewall Rules
-    for a in range(len(resp)):
-        for b in range(len(config['Rules'])):
-            if resp[a].FirewallRuleDescription == config['Rules'][b]:
-                if resp[a].CidrBlock == ip:
-                    pass
-                else:
-                    resp[a].CidrBlock = ip
-                    needupdate = True
-    if needupdate:
-        print("IP is different, start updating")
-        modify_firewall_rules(cred, InstanceRegion, InstanceId, resp)
-    else:
-        print("IP is the same, no need to update")
+        # Get Firewall Rules
+        resp = get_firewall_rules(cred, InstanceRegion, InstanceId)
+
+        # Modify Firewall Rules
+        for a in range(len(resp)):
+            for b in range(len(config['Rules'])):
+                if resp[a].FirewallRuleDescription == config['Rules'][b]:
+                    if resp[a].CidrBlock == ip:
+                        pass
+                    else:
+                        resp[a].CidrBlock = ip
+                        needupdate = True
+        if needupdate:
+            print("IP is different, start updating")
+            modify_firewall_rules(cred, InstanceRegion, InstanceId, resp)
+        else:
+            print("IP is the same, no need to update")
+    except KeyboardInterrupt:
+        print('KeyboardInterrupt')
+        sys.exit()
+    except Exception as err:
+        print('Error: ' + err)
+        sys.exit()
 
 
 if __name__ == '__main__':
