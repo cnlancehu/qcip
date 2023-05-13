@@ -35,12 +35,13 @@ jobs:
           mkdir artifact
           cp config.json artifact/config.json
           cp qcip artifact/qcip
+          zip -r qcip-${{ github.event.inputs.version }}-linux-amd64.zip artifact/*
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-linux-amd64
-          path: artifact/*
-          
+          name: artifact
+          path: qcip-${{ github.event.inputs.version }}-linux-amd64.zip
+
   Windows:
     runs-on: windows-2022
     steps:
@@ -63,11 +64,12 @@ jobs:
           mkdir artifact
           cp config.json artifact/config.json
           cp qcip.exe artifact/qcip.exe
+          powershell Compress-Archive -Path artifact\* -DestinationPath qcip-${{ github.event.inputs.version }}-windows-amd64.zip
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-windows-amd64
-          path: artifact/*
+          name: artifact
+          path: qcip-${{ github.event.inputs.version }}-windows-amd64.zip
           
   MacOS:
     runs-on: macos-12
@@ -78,7 +80,7 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.10"
-      - name: Install dependencies
+      - name: Install dependencies 
         run: |
           brew install python@3.10
           sudo python3 -m pip install --upgrade pip
@@ -91,11 +93,13 @@ jobs:
           mkdir artifact
           cp config.json artifact/config.json
           cp qcip artifact/qcip
+          zip -r qcip-${{ github.event.inputs.version }}-macos-amd64.zip artifact/*
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-macos-amd64
-          path: artifact/*
+          name: artifact
+          path: qcip-${{ github.event.inputs.version }}-macos-amd64.zip
+          
   Source:
     runs-on: ubuntu-22.04
     steps:
@@ -106,9 +110,29 @@ jobs:
           mkdir artifact
           cp main.py artifact/main.py
           cp config.json artifact/config.json
+          zip -r qcip-${{ github.event.inputs.version }}-source.zip artifact/*
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: qcip-${{ github.event.inputs.version }}-source
-          path: artifact/*
-
+          name: artifact
+          path: qcip-${{ github.event.inputs.version }}-source.zip
+  MD5:
+    runs-on: ubuntu-22.04
+    needs: [Linux, Windows, MacOS, Source]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download
+        uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: artifact
+      - name: Generate MD5
+        run: |
+          cd artifact
+          md5sum * > md5.txt
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: artifact
+          path: artifact/md5.txt
