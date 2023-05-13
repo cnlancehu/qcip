@@ -19,7 +19,7 @@
 #### 方法一 直接下载可执行文件(推荐)
 从[Releases](https://github.com/cnlancehu/qcliteautorip/releases)中下载适合你的系统的可执行文件，解压
 
-若没有适合你的系统的二进制文件，请使用[方法二](#方法二-使用python运行)或[自行构建](#自行构建)
+若没有适合你的系统的二进制文件，请使用[方法二](#方法二-使用python运行)
 #### 方法二 使用Python运行
 **环境要求**
 > Python 3.6+ (建议使用 3.10)
@@ -124,36 +124,6 @@ https://api.lance.fun/ip/
 IPIP // 推荐在中国大陆使用
 http://myip.ipip.net/ip
 ```
-
-### 自行构建
-
-#### 环境要求
-> Python 3.10
-
-必要的Python Module
-
-```bash
-pip3 install pyinstaller
-pip3 install requests
-pip3 install tencentcloud-sdk-python
-pip3 install pillow
-```
-
-#### 构建
-
-克隆本仓库到本地
-```bash
-git clone https://github.com/cnlancehu/qcliteautorip.git
-cd qcliteautorip
-```
-
-构建
-```bash
-python3 -m PyInstaller main.py -F
-cp dist/main.exe dist/qcip.exe
-cp config.json dist/config.json
-```
-二进制文件和配置文件将会生成在 `dist` 文件夹中
 
 
 #### Q & A
