@@ -25,6 +25,7 @@ jobs:
         run: |
           sudo python3 -m pip install --upgrade pip
           pip3 install --user nuitka
+          sudo pip3 install tencentcloud-sdk-python
           sudo pip3 install requests
           sudo apt-get install -y gcc
           sudo apt-get install -y python3-dev
@@ -52,6 +53,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
+          pip3 install tencentcloud-sdk-python
           pip3 install nuitka
           pip3 install requests
           choco install visualstudio2019buildtools -y
@@ -80,6 +82,7 @@ jobs:
         run: |
           brew install python@3.10
           sudo python3 -m pip install --upgrade pip
+          sudo pip3 install tencentcloud-sdk-python
           sudo pip3 install requests
           sudo pip3 install nuitka
       - name: Build
