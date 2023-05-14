@@ -122,7 +122,7 @@ LanceAPI // 推荐在海外使用
 https://api.lance.fun/ip/
 
 IPIP // 推荐在中国大陆使用
-http://myip.ipip.net/ip
+https://myip.ipip.net/ip
 ```
 
 

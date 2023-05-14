@@ -5,7 +5,7 @@
             "name": "Run",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -13,14 +13,9 @@
             "name": "Build",
             "type": "python",
             "request": "launch",
-            "module": "PyInstaller",
+            "module": "nuitka",
             "justMyCode": true,
-            "args": [
-                "-F",
-                "${file}",
-                "--upx-dir",
-                "upx"
-            ]
+            "args": "--standalone --onefile --experimental=use-pefile --follow-imports -o qcip.exe --assume-yes-for-downloads main.py "
         }
     ]
 }

@@ -1,6 +1,6 @@
-import requests
 import json
-import sys
+from requests import get as reqget
+from sys import exit, argv
 from time import sleep
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
@@ -30,19 +30,19 @@ def get_config(configpath):
         json.load(open(configpath, 'r', encoding='utf-8'))
     except FileNotFoundError:
         print('Config file not found')
-        sys.exit()
+        exit()
     except FileExistsError:
         print('Config file exists error')
-        sys.exit()
+        exit()
     except json.decoder.JSONDecodeError:
         print('Incorrect configuration file format')
-        sys.exit()
+        exit()
     except UnicodeDecodeError:
         print('Incorrect configuration file, it should be a text file using utf-8 encoding')
-        sys.exit()
+        exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        sys.exit()
+        exit()
     else:
         config = json.load(open(configpath, 'r', encoding='utf-8'))
     return config
@@ -65,18 +65,18 @@ def get_ip(api, maxretries=3):
     for i in range(maxretries):
         try:
             if api == "LanceAPI":
-                ip = requests.get('https://api.lance.fun/ip/').text
+                ip = reqget('https://api.lance.fun/ip/').text
             elif api == "IPIP":
-                ip = json.loads(requests.get(
+                ip = json.loads(reqget(
                     'https://myip.ipip.net/ip').text)['ip']
             else:
-                ip = json.loads(requests.get(
+                ip = json.loads(reqget(
                     'https://myip.ipip.net/ip').text)['ip']
         except Exception as e:
             print(f'IP API call failed, retrying {i+1} time...')
             if i == maxretries - 1:
                 print('Max retries exceeded, try to change an api')
-                sys.exit()
+                exit()
             sleep(0.5)
             continue
     return ip
@@ -112,7 +112,7 @@ def check_config(config):
         print('Rules not found')
         checkpassing = False
     if not checkpassing:
-        sys.exit()
+        exit()
     return checkpassing
 
 
@@ -150,10 +150,10 @@ def get_firewall_rules(cred, InstanceRegion, InstanceId):
         return resp
     except TencentCloudSDKException as err:
         print(err)
-        sys.exit()
+        exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        sys.exit()
+        exit()
 
 
 def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
@@ -190,10 +190,10 @@ def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
 
     except TencentCloudSDKException as err:
         print(err)
-        sys.exit()
+        exit()
     except Exception as e:
         print('Unknown error: ' + str(e))
-        sys.exit()
+        exit()
 
 
 def main():
@@ -206,11 +206,11 @@ def main():
 
         # Get config
         try:
-            sys.argv[1]
+            argv[1]
         except IndexError:
             config = get_config('config.json')
         else:
-            config = get_config(sys.argv[1])
+            config = get_config(argv[1])
         check_config(config)
         try:
             maxretries = int(config['MaxRetries'])
@@ -247,12 +247,13 @@ def main():
             modify_firewall_rules(cred, InstanceRegion, InstanceId, resp)
         else:
             print("IP is the same, no need to update")
+        exit()
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
-        sys.exit()
+        exit()
     except Exception as err:
         print('Error: ' + err)
-        sys.exit()
+        exit()
 
 
 if __name__ == '__main__':
