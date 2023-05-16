@@ -2,6 +2,7 @@ import json
 from requests import get as reqget
 from sys import exit, argv
 from time import sleep
+from termcolor import colored
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -29,19 +30,20 @@ def get_config(configpath):
     try:
         json.load(open(configpath, 'r', encoding='utf-8'))
     except FileNotFoundError:
-        print('Config file not found')
+        print(colored('Config file not found', 'light_red'))
         exit()
     except FileExistsError:
-        print('Config file exists error')
+        print(colored('Config file exists error'), 'light_red')
         exit()
     except json.decoder.JSONDecodeError:
-        print('Incorrect configuration file format')
+        print(colored('Incorrect configuration file format', 'light_red'))
         exit()
     except UnicodeDecodeError:
-        print('Incorrect configuration file, it should be a text file using utf-8 encoding')
+        print(colored('Incorrect configuration file, it should be a text file using utf-8 encoding', 'light_red'))
         exit()
     except Exception as e:
-        print('Unknown error: ' + str(e))
+        e = 'Unknown error: ' + str(e)
+        print(colored(e, 'light_red'))
         exit()
     else:
         config = json.load(open(configpath, 'r', encoding='utf-8'))
@@ -75,45 +77,46 @@ def get_ip(api, maxretries=3):
         except Exception as e:
             print(f'IP API call failed, retrying {i+1} time...')
             if i == maxretries - 1:
-                print('Max retries exceeded, try to change an api')
+                print(colored('Max retries exceeded, try to change an api', 'light_red'))
                 exit()
             sleep(0.5)
             continue
     return ip
 
 
-def check_config(config):
-    """
-    Check if the configuration is valid.
-
-    Args:
-        config (dict): The configuration dictionary.
-
-    Returns:
-        bool: True if the configuration is valid, False otherwise.
-    """
-    checkpassing = True
-    if 'SecretId' not in config and 'SecretKey' not in config:
-        print('Both SecretId and SecretKey not found')
-        checkpassing = False
-    elif 'SecretId' not in config:
-        print('SecretId not found')
-        checkpassing = False
-    elif 'SecretKey' not in config:
-        print('SecretKey not found')
-        checkpassing = False
-    if 'InstanceId' not in config:
-        print('InstanceID not found')
-        checkpassing = False
-    if 'InstanceRegion' not in config:
-        print('InstanceRegion not found')
-        checkpassing = False
-    if 'Rules' not in config:
-        print('Rules not found')
-        checkpassing = False
-    if not checkpassing:
-        exit()
+def check_config(config): 
+    """ 
+    Check if the configuration is valid. 
+ 
+    Args: 
+        config (dict): The configuration dictionary. 
+ 
+    Returns: 
+        bool: True if the configuration is valid, False otherwise. 
+    """ 
+    checkpassing = True 
+    if 'SecretId' not in config and 'SecretKey' not in config: 
+        print(colored('Both SecretId and SecretKey not found', 'light_red')) 
+        checkpassing = False 
+    elif 'SecretId' not in config: 
+        print(colored('SecretId not found', 'light_red')) 
+        checkpassing = False 
+    elif 'SecretKey' not in config: 
+        print(colored('SecretKey not found', 'light_red')) 
+        checkpassing = False 
+    if 'InstanceId' not in config: 
+        print(colored('InstanceID not found', 'light_red')) 
+        checkpassing = False 
+    if 'InstanceRegion' not in config: 
+        print(colored('InstanceRegion not found', 'light_red')) 
+        checkpassing = False 
+    if 'Rules' not in config: 
+        print(colored('Rules not found', 'light_red')) 
+        checkpassing = False 
+    if not checkpassing: 
+        exit() 
     return checkpassing
+
 
 
 def get_firewall_rules(cred, InstanceRegion, InstanceId):
@@ -149,10 +152,11 @@ def get_firewall_rules(cred, InstanceRegion, InstanceId):
         resp = client.DescribeFirewallRules(req).FirewallRuleSet
         return resp
     except TencentCloudSDKException as err:
-        print(err)
+        print(colored(err, 'light_red'))
         exit()
     except Exception as e:
-        print('Unknown error: ' + str(e))
+        e = 'Unknown error: ' + str(e)
+        print(colored(e, 'light_red'))
         exit()
 
 
@@ -189,10 +193,11 @@ def modify_firewall_rules(cred, InstanceRegion, InstanceId, resp):
         print("Successfully modified the firewall rules")
 
     except TencentCloudSDKException as err:
-        print(err)
+        print(colored(err, 'light_red'))
         exit()
     except Exception as e:
-        print('Unknown error: ' + str(e))
+        e = 'Unknown error: ' + str(e)
+        print(colored(e, 'light_red'))
         exit()
 
 
@@ -201,6 +206,12 @@ def main():
     The main function.
     """
     try:
+        try:
+            version
+        except:
+            print('QCIP ' + colored('Python version ', 'light_yellow'))
+        else:
+            print('QCIP ' + version)
         # Init
         needupdate = False
 
@@ -249,10 +260,11 @@ def main():
             print("IP is the same, no need to update")
         exit()
     except KeyboardInterrupt:
-        print('KeyboardInterrupt')
+        print(colored('KeyboardInterrupt', 'light_red'))
         exit()
     except Exception as err:
-        print('Error: ' + err)
+        err = 'Error: ' + err
+        print(colored(err, 'light_red'))
         exit()
 
 

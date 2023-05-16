@@ -27,10 +27,12 @@ jobs:
           pip3 install --user nuitka
           sudo pip3 install tencentcloud-sdk-python
           sudo pip3 install requests
+          sudo pip3 install termcolor
           sudo apt-get install -y gcc
           sudo apt-get install -y python3-dev
       - name: Build
         run: |
+          sed -i "11i\version = colored('Linux version ', 'light_yellow') + colored('${{ github.env.version }}', 'green')" main.py
           python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
           mkdir artifact
           cp config.json artifact/config.json
@@ -57,9 +59,12 @@ jobs:
           pip3 install tencentcloud-sdk-python
           pip3 install nuitka
           pip3 install requests
+          pip3 install termcolor
           choco install visualstudio2019buildtools -y
+          choco install sed
       - name: Build
         run: |
+          sed -i "11i\version = colored('Windows version ', 'light_yellow') + colored('${{ github.env.version }}', 'green')" main.py
           python3 -m nuitka --standalone --onefile --experimental=use-pefile --follow-imports -o qcip.exe --assume-yes-for-downloads main.py 
           mkdir artifact
           cp config.json artifact/config.json
@@ -86,9 +91,11 @@ jobs:
           sudo python3 -m pip install --upgrade pip
           sudo pip3 install tencentcloud-sdk-python
           sudo pip3 install requests
+          sudo pip3 install termcolor
           sudo pip3 install nuitka
       - name: Build
         run: |
+          sed -i "11i\version = colored('MacOS version ', 'light_yellow') + colored('${{ github.env.version }}', 'green')" main.py
           python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
           mkdir artifact
           cp config.json artifact/config.json
@@ -107,6 +114,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Wrapping
         run: |
+          sed -i "11i\version = colored('Python version ', 'light_yellow') + colored('${{ github.env.version }}', 'green')" main.py
           mkdir artifact
           cp main.py artifact/main.py
           cp config.json artifact/config.json
