@@ -33,7 +33,6 @@ jobs:
       - name: Build
         run: |
           sed -i "11i\version = colored('Linux version ', 'light_yellow') + colored('${{ github.event.inputs.version }}', 'green')" main.py
-          " main.py
           python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
           mkdir artifact
           cp config.json artifact/config.json
