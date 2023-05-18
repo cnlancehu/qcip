@@ -37,7 +37,9 @@ jobs:
           mkdir artifact
           cp config.json artifact/config.json
           cp qcip artifact/qcip
-          zip -r qcip-${{ github.event.inputs.version }}-linux-amd64.zip artifact/*
+          cd artifact
+          zip -r qcip-${{ github.event.inputs.version }}-linux-amd64.zip *
+          mv qcip-${{ github.event.inputs.version }}-linux-amd64.zip ../
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
@@ -101,7 +103,9 @@ jobs:
           mkdir artifact
           cp config.json artifact/config.json
           cp qcip artifact/qcip
-          zip -r qcip-${{ github.event.inputs.version }}-macos-amd64.zip artifact/*
+          cd artifact
+          zip -r qcip-${{ github.event.inputs.version }}-macos-amd64.zip *
+          mv qcip-${{ github.event.inputs.version }}-macos-amd64.zip ../
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
@@ -119,7 +123,9 @@ jobs:
           mkdir artifact
           cp main.py artifact/main.py
           cp config.json artifact/config.json
-          zip -r qcip-${{ github.event.inputs.version }}-source.zip artifact/*
+          cd artifact
+          zip -r qcip-${{ github.event.inputs.version }}-source-amd64.zip *
+          mv qcip-${{ github.event.inputs.version }}-source-amd64.zip ../
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
