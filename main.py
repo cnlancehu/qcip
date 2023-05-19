@@ -1,3 +1,6 @@
+osver = "Linux"
+version = "0.2.1"
+
 import json
 from requests import get as reqget
 from sys import exit, argv
@@ -206,12 +209,7 @@ def main():
     The main function.
     """
     try:
-        try:
-            version
-        except:
-            print('QCIP ' + colored('Python version ', 'light_yellow'))
-        else:
-            print('QCIP ' + version)
+        print('QCIP', colored(osver + ' version', 'light_yellow'), colored(version, 'light_green'))
         # Init
         needupdate = False
 

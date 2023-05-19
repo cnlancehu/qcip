@@ -17,6 +17,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Update Code
+        run: |
+          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
+          sed -i "1s/.*/osver = \"Linux\"/" main.py
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
@@ -32,7 +36,6 @@ jobs:
           sudo apt-get install -y python3-dev
       - name: Build
         run: |
-          sed -i "11i\version = colored('Linux version ', 'light_yellow') + colored('${{ github.event.inputs.version }}', 'green')" main.py
           python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
           mkdir artifact
           cp config.json artifact/config.json
@@ -51,6 +54,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3  
+      - name: Update Code
+        run: |
+          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
+          sed -i "1s/.*/osver = \"Windows\"/" main.py
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
@@ -66,7 +73,6 @@ jobs:
           choco install sed
       - name: Build
         run: |
-          sed -i "11i\version = colored('Windows version ', 'light_yellow') + colored('${{ github.event.inputs.version }}', 'green')" main.py
           python3 -m nuitka --standalone --onefile --experimental=use-pefile --follow-imports -o qcip.exe --assume-yes-for-downloads main.py 
           mkdir artifact
           cp config.json artifact/config.json
@@ -82,7 +88,12 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v3       
+        uses: actions/checkout@v3
+      - name: Update Code
+        run: |
+          brew install gnu-sed
+          gsed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
+          gsed -i "1s/.*/osver = \"MacOS\"/" main.py
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
@@ -97,8 +108,6 @@ jobs:
           sudo pip3 install nuitka
       - name: Build
         run: |
-          sed -i '' '11i\
-          version = colored('"'"'MacOS version '"'"', '"'"'light_yellow'"'"') + colored('\''${{ github.event.inputs.version }}'\'', '"'"'green'"'"')' main.py
           python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
           mkdir artifact
           cp config.json artifact/config.json
@@ -117,9 +126,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Update Code
+        run: |
+          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
       - name: Wrapping
         run: |
-          sed -i "11i\version = colored('Python version ', 'light_yellow') + colored('${{ github.event.inputs.version }}', 'green')" main.py
           mkdir artifact
           cp main.py artifact/main.py
           cp config.json artifact/config.json
