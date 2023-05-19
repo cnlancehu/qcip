@@ -124,8 +124,8 @@ jobs:
           cp main.py artifact/main.py
           cp config.json artifact/config.json
           cd artifact
-          zip -r qcip-${{ github.event.inputs.version }}-source-amd64.zip *
-          mv qcip-${{ github.event.inputs.version }}-source-amd64.zip ../
+          zip -r qcip-${{ github.event.inputs.version }}-source.zip *
+          mv qcip-${{ github.event.inputs.version }}-source.zip ../
       - name: Upload
         uses: actions/upload-artifact@v3.1.2
         with:
