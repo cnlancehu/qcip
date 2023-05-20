@@ -55,6 +55,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3  
       - name: Update Code
+        shell: cmd
         run: |
           sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
           sed -i "1s/.*/osver = \"Windows\"/" main.py

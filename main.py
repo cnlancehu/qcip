@@ -1,5 +1,5 @@
-osver = "Linux"
-version = "0.2.1"
+osver = "Python"
+version = ""
 
 import json
 from requests import get as reqget
