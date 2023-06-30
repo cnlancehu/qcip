@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
@@ -116,6 +117,7 @@ func getip(api string, maxretries int) string {
 			resp, err := http.Get("https://api.lance.fun/ip")
 			if err != nil {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
+				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
 				ip, _ := io.ReadAll(resp.Body)
@@ -214,7 +216,7 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	request := lighthouse.NewModifyFirewallRulesRequest()
 	request.InstanceId = common.StringPtr(InstanceId)
 	request.FirewallRules = ptrRules // use ptrRules instead of rules
-	response, err := client.ModifyFirewallRules(request)
+	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		fmt.Printf("An API error has returned: %s\n", err)
 		return
@@ -222,5 +224,4 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s", response.ToJsonString())
 }
