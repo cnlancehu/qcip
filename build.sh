@@ -5,10 +5,6 @@ platforms=("darwin/amd64" "darwin/arm64" "freebsd/386" "freebsd/amd64" "freebsd/
 package="qcip"
 output="dist"
 
-export GOPATH=$GITHUB_WORKSPACE/go
-go get -v -u github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse
-go get golang.org/x/net/context
-
 for platform in "${platforms[@]}"
 do
     goos="${platform%/*}"
