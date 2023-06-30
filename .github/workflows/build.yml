@@ -1,165 +1,28 @@
 name: Build
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version"
-        required: true
-        type: string
+    workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  Linux:
+  Build:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Update Code
-        run: |
-          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
-          sed -i "1s/.*/osver = \"Linux\"/" main.py
-      - name: Set up Python
-        uses: actions/setup-python@v4.5.0
+      - name: Setup Go environment
+        uses: actions/setup-go@v4.0.1
         with:
-          python-version: "3.10"  
-      - name: Install dependencies
-        run: |
-          sudo python3 -m pip install --upgrade pip
-          pip3 install --user nuitka
-          sudo pip3 install tencentcloud-sdk-python
-          sudo pip3 install requests
-          sudo pip3 install termcolor
-          sudo apt-get install -y gcc
-          sudo apt-get install -y python3-dev
+          go-version: 1.20
+          go-version-file: go.mod
       - name: Build
         run: |
-          python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
-          mkdir artifact
-          cp config.json artifact/config.json
-          cp qcip artifact/qcip
-          cd artifact
-          zip -r qcip-${{ github.event.inputs.version }}-linux-amd64.zip *
-          mv qcip-${{ github.event.inputs.version }}-linux-amd64.zip ../
-      - name: Upload
+            chmod 755 build.sh
+            ./build.sh
+      - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3.1.2
         with:
           name: artifact
-          path: qcip-${{ github.event.inputs.version }}-linux-amd64.zip
-
-  Windows:
-    runs-on: windows-2022
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3  
-      - name: Update Code
-        shell: cmd
-        run: |
-          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
-          sed -i "1s/.*/osver = \"Windows\"/" main.py
-      - name: Set up Python
-        uses: actions/setup-python@v4.5.0
-        with:
-          python-version: "3.10"  
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install tencentcloud-sdk-python
-          pip3 install nuitka
-          pip3 install requests
-          pip3 install termcolor
-          choco install visualstudio2019buildtools -y
-          choco install sed
-      - name: Build
-        run: |
-          python3 -m nuitka --standalone --onefile --experimental=use-pefile --follow-imports -o qcip.exe --assume-yes-for-downloads main.py 
-          mkdir artifact
-          cp config.json artifact/config.json
-          cp qcip.exe artifact/qcip.exe
-          powershell Compress-Archive -Path artifact\* -DestinationPath qcip-${{ github.event.inputs.version }}-windows-amd64.zip
-      - name: Upload
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: artifact
-          path: qcip-${{ github.event.inputs.version }}-windows-amd64.zip
-          
-  MacOS:
-    runs-on: macos-12
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Update Code
-        run: |
-          brew install gnu-sed
-          gsed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
-          gsed -i "1s/.*/osver = \"MacOS\"/" main.py
-      - name: Set up Python
-        uses: actions/setup-python@v4.5.0
-        with:
-          python-version: "3.10"
-      - name: Install dependencies 
-        run: |
-          brew install python@3.10
-          sudo python3 -m pip install --upgrade pip
-          sudo pip3 install tencentcloud-sdk-python
-          sudo pip3 install requests
-          sudo pip3 install termcolor
-          sudo pip3 install nuitka
-      - name: Build
-        run: |
-          python3 -m nuitka --standalone --onefile --follow-imports -o qcip main.py
-          mkdir artifact
-          cp config.json artifact/config.json
-          cp qcip artifact/qcip
-          cd artifact
-          zip -r qcip-${{ github.event.inputs.version }}-macos-amd64.zip *
-          mv qcip-${{ github.event.inputs.version }}-macos-amd64.zip ../
-      - name: Upload
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: artifact
-          path: qcip-${{ github.event.inputs.version }}-macos-amd64.zip
-          
-  Source:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Update Code
-        run: |
-          sed -i "2s/.*/version = \"${{ github.event.inputs.version }}\"/" main.py
-      - name: Wrapping
-        run: |
-          mkdir artifact
-          cp main.py artifact/main.py
-          cp config.json artifact/config.json
-          cd artifact
-          zip -r qcip-${{ github.event.inputs.version }}-source.zip *
-          mv qcip-${{ github.event.inputs.version }}-source.zip ../
-      - name: Upload
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: artifact
-          path: qcip-${{ github.event.inputs.version }}-source.zip
-  MD5:
-    runs-on: ubuntu-22.04
-    needs: [Linux, Windows, MacOS, Source]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Download
-        uses: actions/download-artifact@v3
-        with:
-          name: artifact
-          path: artifact
-      - name: Generate MD5
-        run: |
-          cd artifact
-          md5sum * > md5.txt
-      - name: Upload
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: artifact
-          path: artifact/md5.txt
+          path: dist/*
