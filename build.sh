@@ -7,6 +7,7 @@ output="dist"
 
 export GOPATH=$GITHUB_WORKSPACE/go
 go get -v -u github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse
+go get golang.org/x/net/context
 
 for platform in "${platforms[@]}"
 do
