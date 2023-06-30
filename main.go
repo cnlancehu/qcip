@@ -69,8 +69,10 @@ func main() {
 		fmt.Printf("IP is different, start updating\n")
 		modifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
+		os.Exit(1)
 	} else {
 		fmt.Printf("IP is the same\n")
+		os.Exit(1)
 	}
 }
 
@@ -159,7 +161,7 @@ func getrules(credential *common.Credential, InstanceRegion string, InstanceId s
 	request.Limit = common.Int64Ptr(100)
 	response, err := client.DescribeFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s", err)
+		fmt.Printf("An API error has returned: %s\n", err)
 		os.Exit(1)
 	}
 	if err != nil {
@@ -214,7 +216,7 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	request.FirewallRules = ptrRules // use ptrRules instead of rules
 	response, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s", err)
+		fmt.Printf("An API error has returned: %s\n", err)
 		return
 	}
 	if err != nil {
