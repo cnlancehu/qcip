@@ -17,6 +17,10 @@ import (
 	lighthouse "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse/v20200324"
 )
 
+var (
+	version = ""
+)
+
 type Config struct {
 	SecretId       string
 	SecretKey      string
@@ -50,7 +54,7 @@ type Rules struct {
 }
 
 func main() {
-	fmt.Printf("QCIP\n")
+	fmt.Printf("QCIP \033[32mv%s\033[0m\n", version)
 	var configpath string
 	if len(os.Args) > 1 {
 		configpath = os.Args[1]

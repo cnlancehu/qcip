@@ -10,7 +10,7 @@ do
     goos="${platform%/*}"
     goarch="${platform#*/}"
     echo "Building for $goos/$goarch"
-    GOOS=$goos GOARCH=$goarch go build -o $output/qcip
+    GOOS=$goos GOARCH=$goarch go build -o $output/qcip -ldflags "-X main.version=${{ github.event.inputs.version }}"
 
     if [ $goos = "windows" ]; then
         mv $output/qcip $output/qcip.exe
