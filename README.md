@@ -1,13 +1,14 @@
 # qcip
 
-### 全新Golang重写版
+**全新Golang重写版 比Python版运行速度快了11.3753秒**
 
-自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被开发者的ip访问
+
+自动设置腾讯云轻量服务器的防火墙来源限制，使服务器重要端口只能被运行者的ip访问
 
 > **注意** 该脚本仅支持控制腾讯云**轻量应用服务器**的防火墙
 
 ## 原理
-从配置文件中读取SecretId、SecretKey、InstanceId等信息以访问腾讯云API，然后获取本机的IP地址并检查防火墙规则是否需要更新。如果IP发生更改，它会修改适当的防火墙规则，以确保实例的指定端口只允许本机地址访问。 
+从配置文件中读取SecretId、SecretKey、InstanceId等信息以访问腾讯云API，获取本机的IP地址并检查防火墙规则是否需要更新。若IP发生改变，修改防火墙规则的**来源限制**，以确保实例的指定端口只允许运行者的IP访问。 
 
 ## 使用方法
 
@@ -24,7 +25,7 @@
 {
     "SecretId": "SecretId", // 腾讯云API密钥ID
     "SecretKey": "SecretKey", // 腾讯云API密钥Key
-    "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP ，默认为IPIP， 中国大陆用户请使用 IPIP
+    "GetIPAPI": "IPIP", // 获取IP的API，选填 LanceAPI 或 IPIP
     "InstanceId": "InstanceId", // 服务器的实例ID
     "InstanceRegion": "InstanceRegion", // 服务器的地域，参见下文附录
     "MaxRetries": "3", // 获取IP地址时出现错误的最大重试次数
@@ -53,14 +54,13 @@ qcip {config.json的路径(可选，默认为与程序相同目录下的config.j
 ### 开机启动
 你也可以把程序文件放入电脑的启动项中，这样，每次开机时，脚本就会自动运行
 
-你可以在下面的目录(启动项文件夹)中添加该脚本的**快捷方式**
+你可以在下面的目录(启动项文件夹)中添加该脚本的**快捷方式**或**运行程序的批处理文件(bat)**
 
 `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`
 
-
+使用以下脚本运行以隐藏命令行窗口
 ```vbs
 // qcip.vbs
-// 该脚本适用于方法二，如果你使用的是方法一，请适当修改后使用
 Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "cmd /c /*运行的命令*/", 0, False
 ```
@@ -85,4 +85,8 @@ https://api.lance.fun/ip/
 
 IPIP // 推荐在中国大陆使用
 https://myip.ipip.net/ip
+
+
 ```
+
+> 更多IP正在适配中

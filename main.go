@@ -18,7 +18,10 @@ import (
 )
 
 var (
-	version = ""
+	version    = " Development"
+	httpClient = &http.Client{
+		Timeout: time.Second * 10,
+	}
 )
 
 type Config struct {
@@ -55,13 +58,7 @@ type Rules struct {
 
 func main() {
 	fmt.Printf("QCIP \033[32mv%s\033[0m\n", version)
-	var configpath string
-	if len(os.Args) > 1 {
-		configpath = os.Args[1]
-	} else {
-		configpath = "config.json"
-	}
-	configData := getConfig(configpath)
+	configData := getconfig()
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
 	credential := common.NewCredential(
@@ -81,25 +78,38 @@ func main() {
 	}
 }
 
-func getConfig(confPath string) Config {
-	// Get config file
+func getconfig() Config {
+	var confPath string
+
+	if len(os.Args) > 1 {
+		confPath = os.Args[1]
+	} else {
+		confPath = "config.json"
+	}
 	config, err := os.ReadFile(confPath)
 	if err != nil {
-		fmt.Printf("Error reading config file: %s\n", err)
+		if os.IsNotExist(err) {
+			fmt.Println("Config file does not exist")
+			os.Exit(1)
+		}
+		fmt.Printf("Unknown error: %s\n", err)
 		os.Exit(1)
 	}
+	var configData Config
 	if !json.Valid(config) {
 		fmt.Println("Error: config file is not valid json")
 		os.Exit(1)
 	}
-	// Unmarshal config file into custom type
-	var configData Config
 	err = json.Unmarshal(config, &configData)
 	if err != nil {
-		fmt.Printf("Error unmarshalling config file: %s\n", err)
+		decodeErr := json.Unmarshal(config, &configData)
+		if decodeErr != nil {
+			fmt.Println("Incorrect configuration file format")
+			os.Exit(1)
+		}
+		fmt.Printf("Unknown error: %s\n", err)
 		os.Exit(1)
 	}
-	// Check if config file include all required fields
 	requiredKeys := []string{"SecretId", "SecretKey", "InstanceId", "InstanceRegion", "Rules"}
 	checkPassing := true
 	for _, key := range requiredKeys {
@@ -118,7 +128,8 @@ func getConfig(confPath string) Config {
 func getip(api string, maxretries int) string {
 	if api == "LanceAPI" {
 		for i := 0; i < maxretries; i++ {
-			resp, err := http.Get("https://api.lance.fun/ip")
+			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
+			resp, err := httpClient.Do(req)
 			if err != nil {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
 				time.Sleep(1 * time.Second)
@@ -132,7 +143,8 @@ func getip(api string, maxretries int) string {
 		os.Exit(1)
 	} else if api == "IPIP" {
 		for i := 0; i < maxretries; i++ {
-			resp, err := http.Get("https://myip.ipip.net/ip")
+			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
+			resp, err := httpClient.Do(req)
 			if err != nil {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
 			} else {
@@ -151,7 +163,7 @@ func getip(api string, maxretries int) string {
 		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
 		os.Exit(1)
 	} else {
-		fmt.Println("Error: IP API not supported")
+		fmt.Printf("Error: IP API %s not supported\n", api)
 		os.Exit(1)
 	}
 	return ""
@@ -202,11 +214,9 @@ func match(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bool
 }
 
 func modifyrules(credential *common.Credential, InstanceRegion string, InstanceId string, rules []FirewallRule) {
-	// Convert slice of FirewallRule to slice of pointers to FirewallRule
 	ptrRules := make([]*lighthouse.FirewallRule, len(rules))
 	for i := range rules {
 		ptrRules[i] = &lighthouse.FirewallRule{
-			// AppType:                 common.StringPtr(rules[i].AppType),
 			Protocol:                common.StringPtr(rules[i].Protocol),
 			Port:                    common.StringPtr(rules[i].Port),
 			CidrBlock:               common.StringPtr(rules[i].CidrBlock),
@@ -219,7 +229,7 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	client, _ := lighthouse.NewClient(credential, InstanceRegion, cpf)
 	request := lighthouse.NewModifyFirewallRulesRequest()
 	request.InstanceId = common.StringPtr(InstanceId)
-	request.FirewallRules = ptrRules // use ptrRules instead of rules
+	request.FirewallRules = ptrRules
 	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		fmt.Printf("An API error has returned: %s\n", err)
