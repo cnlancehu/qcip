@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -18,7 +19,7 @@ import (
 )
 
 var (
-	version    = " Development"
+	version    = "Development"
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -121,7 +122,7 @@ func getconfig() Config {
 	if !checkPassing {
 		os.Exit(1)
 	}
-	fmt.Printf("Config load successfully\n")
+	fmt.Printf("Config loaded\n")
 	return configData
 }
 
@@ -129,6 +130,7 @@ func getip(api string, maxretries int) string {
 	if api == "LanceAPI" {
 		for i := 0; i < maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
+			req.Header.Set("User-Agent", "QCIP")
 			resp, err := httpClient.Do(req)
 			if err != nil {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
@@ -144,6 +146,7 @@ func getip(api string, maxretries int) string {
 	} else if api == "IPIP" {
 		for i := 0; i < maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
+			req.Header.Set("User-Agent", "QCIP")
 			resp, err := httpClient.Do(req)
 			if err != nil {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
@@ -158,6 +161,23 @@ func getip(api string, maxretries int) string {
 				}
 				ip := r.IP
 				return string(ip)
+			}
+		}
+		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
+		os.Exit(1)
+	} else if api == "SB" {
+		for i := 0; i < maxretries; i++ {
+			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
+			req.Header.Set("User-Agent", "QCIP")
+			resp, err := httpClient.Do(req)
+			if err != nil {
+				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
+				time.Sleep(1 * time.Second)
+			} else {
+				defer resp.Body.Close()
+				ipo, _ := io.ReadAll(resp.Body)
+				ip := strings.TrimRight(string(ipo), "\n")
+				return ip
 			}
 		}
 		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
@@ -233,6 +253,7 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		fmt.Printf("An API error has returned: %s\n", err)
+		os.Exit(1)
 		return
 	}
 	if err != nil {
