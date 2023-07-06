@@ -16,6 +16,7 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	lighthouse "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse/v20200324"
+	vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
 )
 
 var (
@@ -27,13 +28,16 @@ var (
 )
 
 type Config struct {
-	SecretId       string
-	SecretKey      string
-	GetIPAPI       string
-	InstanceId     string
-	InstanceRegion string
-	MaxRetries     string
-	Rules          []string
+	MType               string
+	SecretId            string
+	SecretKey           string
+	GetIPAPI            string
+	InstanceId          string
+	InstanceRegion      string
+	SecurityGroupId     string
+	SecurityGroupRegion string
+	MaxRetries          string
+	Rules               []string
 }
 
 type IPResponse struct {
@@ -63,20 +67,46 @@ func main() {
 	configData := getconfig()
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
+	if configData.MType == "lh" {
+		lhmain(configData, ip)
+	} else if configData.MType == "cvm" {
+		cvmmain(configData, ip)
+	}
+}
+
+// 轻量应用服务器主函数
+func lhmain(configData Config, ip string) {
 	credential := common.NewCredential(
 		configData.SecretId,
 		configData.SecretKey,
 	)
-	rules := getrules(credential, configData.InstanceRegion, configData.InstanceId)
-	res, needUpdate := match(rules, ip, configData)
+	rules := lhgetrules(credential, configData.InstanceRegion, configData.InstanceId)
+	res, needUpdate := lhmatch(rules, ip, configData)
 	if needUpdate {
 		fmt.Printf("IP is different, start updating\n")
-		modifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
+		lhmodifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		os.Exit(1)
 	} else {
 		fmt.Printf("IP is the same\n")
 		os.Exit(1)
+	}
+}
+
+// 云服务器主函数
+func cvmmain(configData Config, ip string) {
+	credential := common.NewCredential(
+		configData.SecretId,
+		configData.SecretKey,
+	)
+	rules := sggetrules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion)
+	res, needUpdate := sgmatch(rules, ip, configData)
+	if needUpdate {
+		fmt.Printf("IP is different, start updating\n")
+		sgmodifyrules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
+		fmt.Printf("Successfully modified the firewall rules\n")
+	} else {
+		fmt.Printf("IP is the same\n")
 	}
 }
 
@@ -112,7 +142,15 @@ func getconfig() Config {
 		fmt.Printf("Unknown error: %s\n", err)
 		os.Exit(1)
 	}
-	requiredKeys := []string{"SecretId", "SecretKey", "InstanceId", "InstanceRegion", "Rules"}
+	var requiredKeys []string
+	if configData.MType == "lh" {
+		requiredKeys = []string{"SecretId", "SecretKey", "InstanceId", "InstanceRegion", "Rules"}
+	} else if configData.MType == "cvm" {
+		requiredKeys = []string{"SecretId", "SecretKey", "SecurityGroupId", "SecurityGroupRegion", "Rules"}
+	} else {
+		fmt.Printf("Error machine type: %s\n", configData.MType)
+		os.Exit(1)
+	}
 	checkPassing := true
 	for _, key := range requiredKeys {
 		if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
@@ -127,6 +165,7 @@ func getconfig() Config {
 	return configData
 }
 
+// 轻量应用服务器部分
 func getip(api string, maxretries int) string {
 	if api == "LanceAPI" {
 		for i := 0; i < maxretries; i++ {
@@ -190,7 +229,7 @@ func getip(api string, maxretries int) string {
 	return ""
 }
 
-func getrules(credential *common.Credential, InstanceRegion string, InstanceId string) []FirewallRule {
+func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId string) []FirewallRule {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "lighthouse.tencentcloudapi.com"
 	client, _ := lighthouse.NewClient(credential, InstanceRegion, cpf)
@@ -217,7 +256,7 @@ func getrules(credential *common.Credential, InstanceRegion string, InstanceId s
 	return rules.Response.FirewallRuleSet
 }
 
-func match(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bool) {
+func lhmatch(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bool) {
 	needUpdate := false
 	for a := range rules {
 		for b := range config.Rules {
@@ -234,7 +273,7 @@ func match(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bool
 	return rules, needUpdate
 }
 
-func modifyrules(credential *common.Credential, InstanceRegion string, InstanceId string, rules []FirewallRule) {
+func lhmodifyrules(credential *common.Credential, InstanceRegion string, InstanceId string, rules []FirewallRule) {
 	ptrRules := make([]*lighthouse.FirewallRule, len(rules))
 	for i := range rules {
 		ptrRules[i] = &lighthouse.FirewallRule{
@@ -260,4 +299,92 @@ func modifyrules(credential *common.Credential, InstanceRegion string, InstanceI
 	if err != nil {
 		panic(err)
 	}
+}
+
+// 云服务器安全组部分
+func sggetrules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string) *vpc.SecurityGroupPolicySet {
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
+	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
+	request := vpc.NewDescribeSecurityGroupPoliciesRequest()
+	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
+	response, err := client.DescribeSecurityGroupPolicies(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		fmt.Printf("An API error has returned: %s", err)
+		os.Exit(1)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return response.Response.SecurityGroupPolicySet
+}
+
+func sgmatch(rules *vpc.SecurityGroupPolicySet, ip string, config Config) (*vpc.SecurityGroupPolicySet, bool) {
+	needUpdate := false
+	for a := range rules.Ingress {
+		for b := range config.Rules {
+			if *rules.Ingress[a].PolicyDescription == config.Rules[b] {
+				if *rules.Ingress[a].CidrBlock == ip {
+					continue
+				} else {
+					rules.Ingress[a].CidrBlock = &ip
+					needUpdate = true
+				}
+			}
+		}
+	}
+	return rules, needUpdate
+}
+
+func sgmodifyrules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string, rules *vpc.SecurityGroupPolicySet) {
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
+	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
+	request := vpc.NewModifySecurityGroupPoliciesRequest()
+	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
+	ptrRules := &vpc.SecurityGroupPolicySet{}
+	ptrRules.Version = rules.Version
+	ptrRules.Egress = nil
+	ptrRules.Ingress = rules.Ingress
+	for a := range ptrRules.Ingress {
+		ptrRules.Ingress[a].SecurityGroupId = &SecurityGroupId
+		ptrRules.Ingress[a].PolicyIndex = nil
+		ptrRules.Ingress[a].Ipv6CidrBlock = nil
+		ptrRules.Ingress[a].SecurityGroupId = nil
+		ptrRules.Ingress[a].AddressTemplate = nil
+	}
+	rulesfin := processRules(ptrRules).(*vpc.SecurityGroupPolicySet)
+	request.SecurityGroupPolicySet = rulesfin
+	_, err := client.ModifySecurityGroupPolicies(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		fmt.Printf("An API error has returned: %s", err)
+		os.Exit(1)
+	}
+	if err != nil {
+		panic(err)
+	}
+}
+
+// 把ptrRules中内容为空的值替换为nil
+func processRules(ptrRules interface{}) interface{} {
+	v := reflect.ValueOf(ptrRules)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		if field.Kind() == reflect.Ptr && !field.IsNil() && field.Elem().Kind() == reflect.String && field.Elem().String() == "" {
+			field.Set(reflect.Zero(field.Type()))
+		} else if field.Kind() == reflect.Struct {
+			processRules(field.Addr().Interface())
+		} else if field.Kind() == reflect.Ptr && !field.IsNil() && field.Elem().Kind() == reflect.Struct {
+			processRules(field.Interface())
+		} else if field.Kind() == reflect.Slice && field.Type().Elem().Kind() == reflect.Ptr && field.Type().Elem().Elem().Kind() == reflect.Struct {
+			for j := 0; j < field.Len(); j++ {
+				elem := field.Index(j)
+				processRules(elem.Interface())
+			}
+		}
+	}
+	return ptrRules
 }

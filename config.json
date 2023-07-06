@@ -1,9 +1,12 @@
 {
+    "MType": "MType",
     "SecretId": "SecretId",
     "SecretKey": "SecretKey",
     "GetIPAPI": "IPIP",
     "InstanceId": "InstanceId",
     "InstanceRegion": "InstanceRegion",
+    "SecurityGroupId": "SecurityGroupId",
+    "SecurityGroupRegion": "SecurityGroupRegion",
     "MaxRetries": "3",
-    "Rules": ["http","ssh"]
+    "Rules": ["iperf3","ssh"]
 }
