@@ -172,7 +172,7 @@ func getip(api string, maxretries int) string {
 			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
-			if err != nil {
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
 				time.Sleep(1 * time.Second)
 			} else {
@@ -188,7 +188,7 @@ func getip(api string, maxretries int) string {
 			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
-			if err != nil {
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
 			} else {
 				defer resp.Body.Close()
@@ -210,7 +210,7 @@ func getip(api string, maxretries int) string {
 			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
-			if err != nil {
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
 				time.Sleep(1 * time.Second)
 			} else {

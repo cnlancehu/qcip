@@ -1,6 +1,6 @@
 # qcip
 
-**全新Golang重写版 比Python版运行速度快了11.3753秒**
+**全新Golang重写版 比[Python版](https://github.com/cnlancehu/qcip/tree/python)运行速度快了11.3753秒**
 
 
 自动设置**腾讯云服务器**的防火墙来源限制，使服务器重要端口只能被运行者的ip访问
