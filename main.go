@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -42,24 +41,6 @@ type Config struct {
 
 type IPResponse struct {
 	IP string `json:"ip"`
-}
-
-type FirewallRule struct {
-	AppType                 string `json:"AppType"`
-	Protocol                string `json:"Protocol"`
-	Port                    string `json:"Port"`
-	CidrBlock               string `json:"CidrBlock"`
-	Action                  string `json:"Action"`
-	FirewallRuleDescription string `json:"FirewallRuleDescription"`
-}
-type Response struct {
-	TotalCount      int            `json:"TotalCount"`
-	FirewallRuleSet []FirewallRule `json:"FirewallRuleSet"`
-	FirewallVersion int            `json:"FirewallVersion"`
-	RequestId       string         `json:"RequestId"`
-}
-type Rules struct {
-	Response Response `json:"Response"`
 }
 
 func main() {
@@ -229,7 +210,7 @@ func getip(api string, maxretries int) string {
 	return ""
 }
 
-func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId string) []FirewallRule {
+func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId string) []*lighthouse.FirewallRuleInfo {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "lighthouse.tencentcloudapi.com"
 	client, _ := lighthouse.NewClient(credential, InstanceRegion, cpf)
@@ -245,26 +226,18 @@ func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId
 	if err != nil {
 		panic(err)
 	}
-	orrules := response.ToJsonString()
-	data := []byte(string(orrules))
-	var rules Rules
-	nerr := json.Unmarshal(data, &rules)
-	if nerr != nil {
-		log.Fatalln(nerr)
-		os.Exit(1)
-	}
-	return rules.Response.FirewallRuleSet
+	return response.Response.FirewallRuleSet
 }
 
-func lhmatch(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bool) {
+func lhmatch(rules []*lighthouse.FirewallRuleInfo, ip string, config Config) ([]*lighthouse.FirewallRuleInfo, bool) {
 	needUpdate := false
 	for a := range rules {
 		for b := range config.Rules {
-			if rules[a].FirewallRuleDescription == config.Rules[b] {
-				if rules[a].CidrBlock == ip {
+			if *rules[a].FirewallRuleDescription == config.Rules[b] {
+				if *rules[a].CidrBlock == ip {
 					continue
 				} else {
-					rules[a].CidrBlock = ip
+					*rules[a].CidrBlock = ip
 					needUpdate = true
 				}
 			}
@@ -273,15 +246,15 @@ func lhmatch(rules []FirewallRule, ip string, config Config) ([]FirewallRule, bo
 	return rules, needUpdate
 }
 
-func lhmodifyrules(credential *common.Credential, InstanceRegion string, InstanceId string, rules []FirewallRule) {
+func lhmodifyrules(credential *common.Credential, InstanceRegion string, InstanceId string, rules []*lighthouse.FirewallRuleInfo) {
 	ptrRules := make([]*lighthouse.FirewallRule, len(rules))
 	for i := range rules {
 		ptrRules[i] = &lighthouse.FirewallRule{
-			Protocol:                common.StringPtr(rules[i].Protocol),
-			Port:                    common.StringPtr(rules[i].Port),
-			CidrBlock:               common.StringPtr(rules[i].CidrBlock),
-			Action:                  common.StringPtr(rules[i].Action),
-			FirewallRuleDescription: common.StringPtr(rules[i].FirewallRuleDescription),
+			Protocol:                common.StringPtr(*rules[i].Protocol),
+			Port:                    common.StringPtr(*rules[i].Port),
+			CidrBlock:               common.StringPtr(*rules[i].CidrBlock),
+			Action:                  common.StringPtr(*rules[i].Action),
+			FirewallRuleDescription: common.StringPtr(*rules[i].FirewallRuleDescription),
 		}
 	}
 	cpf := profile.NewClientProfile()
