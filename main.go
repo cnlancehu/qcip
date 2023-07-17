@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	version    = "Development"
+	version    = "Dev"
 	ua         = "QCIP/" + version
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
@@ -44,7 +44,7 @@ type IPResponse struct {
 }
 
 func main() {
-	fmt.Printf("QCIP \033[32mv%s\033[0m\n", version)
+	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
 	configData := getconfig()
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
@@ -53,6 +53,7 @@ func main() {
 	} else if configData.MType == "cvm" {
 		cvmmain(configData, ip)
 	}
+	os.Exit(0)
 }
 
 // 轻量应用服务器主函数
@@ -67,10 +68,8 @@ func lhmain(configData Config, ip string) {
 		fmt.Printf("IP is different, start updating\n")
 		lhmodifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
-		os.Exit(1)
 	} else {
 		fmt.Printf("IP is the same\n")
-		os.Exit(1)
 	}
 }
 
@@ -129,13 +128,26 @@ func getconfig() Config {
 	} else if configData.MType == "cvm" {
 		requiredKeys = []string{"SecretId", "SecretKey", "SecurityGroupId", "SecurityGroupRegion", "Rules"}
 	} else {
-		fmt.Printf("Error machine type: %s\n", configData.MType)
-		os.Exit(1)
+		if configData.MType == "" {
+			fmt.Println("Machine type is empty")
+			os.Exit(1)
+		} else {
+			fmt.Printf("Error machine type: %s\n", configData.MType)
+			os.Exit(1)
+		}
 	}
 	checkPassing := true
 	for _, key := range requiredKeys {
 		if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
 			fmt.Println(key + " not found in config file")
+			checkPassing = false
+		}
+		if reflect.ValueOf(configData).FieldByName(key).String() == "" {
+			fmt.Println(key + " is empty")
+			checkPassing = false
+		}
+		if reflect.ValueOf(configData).FieldByName(key).String() == key {
+			fmt.Println(key + " is incorrect")
 			checkPassing = false
 		}
 	}
