@@ -39,12 +39,13 @@ type Config struct {
 	Rules               []string
 }
 
-type IPResponse struct {
+type IPIPResp struct {
 	IP string `json:"ip"`
 }
 
+// 主函数
 func main() {
-	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
+	fmt.Printf("QCIP \033[1;32m%s\033[0m\n", version)
 	configData := getconfig()
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
@@ -90,6 +91,7 @@ func cvmmain(configData Config, ip string) {
 	}
 }
 
+// 读取配置文件
 func getconfig() Config {
 	var confPath string
 
@@ -158,7 +160,7 @@ func getconfig() Config {
 	return configData
 }
 
-// 轻量应用服务器部分
+// 获取自身公网IP
 func getip(api string, maxretries int) string {
 	if api == "LanceAPI" {
 		for i := 0; i < maxretries; i++ {
@@ -186,7 +188,7 @@ func getip(api string, maxretries int) string {
 			} else {
 				defer resp.Body.Close()
 				respn, _ := io.ReadAll(resp.Body)
-				var r IPResponse
+				var r IPIPResp
 				err := json.Unmarshal(respn, &r)
 				if err != nil {
 					fmt.Println(err)
@@ -222,6 +224,7 @@ func getip(api string, maxretries int) string {
 	return ""
 }
 
+// 轻量应用服务器部分
 func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId string) []*lighthouse.FirewallRuleInfo {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "lighthouse.tencentcloudapi.com"
