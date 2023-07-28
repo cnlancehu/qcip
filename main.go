@@ -103,25 +103,25 @@ func getconfig() Config {
 	config, err := os.ReadFile(confPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println("Config file does not exist")
+			errhandle("Config error: config file " + confPath + " does not exist")
 			os.Exit(1)
 		}
-		fmt.Printf("Unknown error: %s\n", err)
+		errhandle("Config error: " + err.Error())
 		os.Exit(1)
 	}
 	var configData Config
 	if !json.Valid(config) {
-		fmt.Println("Error: config file is not valid json")
+		errhandle("Config error: config file is not valid json")
 		os.Exit(1)
 	}
 	err = json.Unmarshal(config, &configData)
 	if err != nil {
 		decodeErr := json.Unmarshal(config, &configData)
 		if decodeErr != nil {
-			fmt.Println("Incorrect configuration file format")
+			errhandle("Config error: config file format is incorrect")
 			os.Exit(1)
 		}
-		fmt.Printf("Unknown error: %s\n", err)
+		errhandle("Config error: " + err.Error())
 		os.Exit(1)
 	}
 	var requiredKeys []string
@@ -131,29 +131,36 @@ func getconfig() Config {
 		requiredKeys = []string{"SecretId", "SecretKey", "SecurityGroupId", "SecurityGroupRegion", "Rules"}
 	} else {
 		if configData.MType == "" {
-			fmt.Println("Machine type is empty")
+			errhandle("Config error: machine type is empty")
 			os.Exit(1)
 		} else {
-			fmt.Printf("Error machine type: %s\n", configData.MType)
+			errhandle("Config error: machine type " + configData.MType + " is incorrect")
 			os.Exit(1)
 		}
 	}
 	checkPassing := true
 	for _, key := range requiredKeys {
 		if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
-			fmt.Println(key + " not found in config file")
 			checkPassing = false
 		}
 		if reflect.ValueOf(configData).FieldByName(key).String() == "" {
-			fmt.Println(key + " is empty")
 			checkPassing = false
 		}
 		if reflect.ValueOf(configData).FieldByName(key).String() == key {
-			fmt.Println(key + " is incorrect")
 			checkPassing = false
 		}
 	}
 	if !checkPassing {
+		errhandle("Config error:")
+		for _, key := range requiredKeys {
+			if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
+				errhandle("	" + key + " not found")
+			} else if reflect.ValueOf(configData).FieldByName(key).String() == "" {
+				errhandle("	" + key + " is empty")
+			} else if reflect.ValueOf(configData).FieldByName(key).String() == key {
+				errhandle("	" + key + " is incorrect")
+			}
+		}
 		os.Exit(1)
 	}
 	fmt.Printf("Config loaded\n")
@@ -168,7 +175,10 @@ func getip(api string, maxretries int) string {
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
+				if i == 0 {
+					errhandle("IP API calling error:")
+				}
+				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -176,7 +186,7 @@ func getip(api string, maxretries int) string {
 				return string(ip)
 			}
 		}
-		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
+		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "IPIP" {
 		for i := 0; i < maxretries; i++ {
@@ -184,21 +194,25 @@ func getip(api string, maxretries int) string {
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
+				if i == 0 {
+					errhandle("IP API calling error:")
+				}
+				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
 				respn, _ := io.ReadAll(resp.Body)
 				var r IPIPResp
 				err := json.Unmarshal(respn, &r)
 				if err != nil {
-					fmt.Println(err)
+					errhandle("IP API calling error: " + err.Error())
 					os.Exit(1)
 				}
 				ip := r.IP
 				return string(ip)
 			}
 		}
-		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
+		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "SB" {
 		for i := 0; i < maxretries; i++ {
@@ -206,7 +220,10 @@ func getip(api string, maxretries int) string {
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				fmt.Printf("IP API call failed, retrying %d time...\n", i+1)
+				if i == 0 {
+					errhandle("IP API calling error:")
+				}
+				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -215,10 +232,10 @@ func getip(api string, maxretries int) string {
 				return ip
 			}
 		}
-		fmt.Printf("IP API call failed %d times, exiting...\n", maxretries)
+		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else {
-		fmt.Printf("Error: IP API %s not supported\n", api)
+		errhandle("IP API calling error: unknown API " + api)
 		os.Exit(1)
 	}
 	return ""
@@ -235,7 +252,8 @@ func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId
 	request.Limit = common.Int64Ptr(100)
 	response, err := client.DescribeFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s\n", err)
+		errhandle("Error while fetching rules for lighthouse:")
+		errhandle("	" + err.Error())
 		os.Exit(1)
 	}
 	if err != nil {
@@ -280,7 +298,8 @@ func lhmodifyrules(credential *common.Credential, InstanceRegion string, Instanc
 	request.FirewallRules = ptrRules
 	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s\n", err)
+		errhandle("Error while modifying rules for lighthouse:")
+		errhandle("	" + err.Error())
 		os.Exit(1)
 		return
 	}
@@ -298,7 +317,8 @@ func sggetrules(credential *common.Credential, SecurityGroupId string, SecurityG
 	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
 	response, err := client.DescribeSecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s", err)
+		errhandle("Error while fetching rules for security group:")
+		errhandle("	" + err.Error())
 		os.Exit(1)
 	}
 	if err != nil {
@@ -345,7 +365,8 @@ func sgmodifyrules(credential *common.Credential, SecurityGroupId string, Securi
 	request.SecurityGroupPolicySet = rulesfin
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		fmt.Printf("An API error has returned: %s", err)
+		errhandle("Error while modifying rules for security group:")
+		errhandle("	" + err.Error())
 		os.Exit(1)
 	}
 	if err != nil {
@@ -375,4 +396,8 @@ func processRules(ptrRules interface{}) interface{} {
 		}
 	}
 	return ptrRules
+}
+
+func errhandle(errmsg string) {
+	fmt.Printf("\033[31m%s\033[0m\n", errmsg)
 }
