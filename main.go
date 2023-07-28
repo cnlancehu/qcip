@@ -169,7 +169,24 @@ func getconfig() Config {
 
 // 获取自身公网IP
 func getip(api string, maxretries int) string {
+	if maxretries < 0 {
+		errhandle("Config error: maxretries should be an integer greater than or equal to 0")
+		os.Exit(1)
+	}
 	if api == "LanceAPI" {
+		if maxretries == 0 {
+			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err := httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				errhandle("IP API calling error")
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+			ip, _ := io.ReadAll(resp.Body)
+			return string(ip)
+		}
+
 		for i := 0; i < maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
 			req.Header.Set("User-Agent", ua)
@@ -189,6 +206,26 @@ func getip(api string, maxretries int) string {
 		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "IPIP" {
+		if maxretries == 0 {
+			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err := httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				errhandle("IP API calling error")
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+			respn, _ := io.ReadAll(resp.Body)
+			var r IPIPResp
+			err = json.Unmarshal(respn, &r)
+			if err != nil {
+				errhandle("IP API calling error: " + err.Error())
+				os.Exit(1)
+			}
+			ip := r.IP
+			return string(ip)
+		}
+
 		for i := 0; i < maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
 			req.Header.Set("User-Agent", ua)
@@ -215,6 +252,19 @@ func getip(api string, maxretries int) string {
 		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "SB" {
+		if maxretries == 0 {
+			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err := httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				errhandle("IP API calling error")
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+			ipo, _ := io.ReadAll(resp.Body)
+			ip := strings.TrimRight(string(ipo), "\n")
+			return ip
+		}
 		for i := 0; i < maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
 			req.Header.Set("User-Agent", ua)
