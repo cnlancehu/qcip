@@ -187,6 +187,7 @@ func getip(api string, maxretries int) string {
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
+				errhandle("	Error detail: " + err.Error())
 				os.Exit(1)
 			}
 			defer resp.Body.Close()
@@ -203,7 +204,7 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -211,7 +212,7 @@ func getip(api string, maxretries int) string {
 				return string(ip)
 			}
 		}
-		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "IPIP" {
 		if maxretries == 0 {
@@ -220,6 +221,7 @@ func getip(api string, maxretries int) string {
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
+				errhandle("	Error detail: " + err.Error())
 				os.Exit(1)
 			}
 			defer resp.Body.Close()
@@ -253,14 +255,14 @@ func getip(api string, maxretries int) string {
 				err := json.Unmarshal(respn, &r)
 				if err != nil {
 					errhandle("IP API calling error: " + err.Error())
-					errhandle("	Error detail: " + err.Error())
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
 					os.Exit(1)
 				}
 				ip := r.IP
 				return string(ip)
 			}
 		}
-		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else if api == "SB" {
 		if maxretries == 0 {
@@ -286,7 +288,7 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -295,7 +297,7 @@ func getip(api string, maxretries int) string {
 				return ip
 			}
 		}
-		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times")
+		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times")
 		os.Exit(1)
 	} else if api == "IPCONF" {
 		if maxretries == 0 {
@@ -321,7 +323,7 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -329,7 +331,7 @@ func getip(api string, maxretries int) string {
 				return strings.TrimSpace(string(ip))
 			}
 		}
-		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
 		os.Exit(1)
 	} else {
 		errhandle("IP API calling error: unknown API " + api)
