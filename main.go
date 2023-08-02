@@ -195,7 +195,7 @@ func getip(api string, maxretries int) string {
 			return string(ip)
 		}
 
-		for i := 0; i < maxretries; i++ {
+		for i := 0; i <= maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
@@ -204,7 +204,15 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
+				if i == 0 && maxretries == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i > 1 && maxretries > 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				} else if i == maxretries {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				}
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -237,7 +245,7 @@ func getip(api string, maxretries int) string {
 			return string(ip)
 		}
 
-		for i := 0; i < maxretries; i++ {
+		for i := 0; i <= maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
@@ -246,7 +254,15 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				if i == 0 && maxretries == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i > 1 && maxretries > 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				} else if i == maxretries {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				}
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -255,7 +271,7 @@ func getip(api string, maxretries int) string {
 				err := json.Unmarshal(respn, &r)
 				if err != nil {
 					errhandle("IP API calling error: " + err.Error())
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
+					errhandle("	Error detail: " + err.Error())
 					os.Exit(1)
 				}
 				ip := r.IP
@@ -279,7 +295,7 @@ func getip(api string, maxretries int) string {
 			ip := strings.TrimRight(string(ipo), "\n")
 			return ip
 		}
-		for i := 0; i < maxretries; i++ {
+		for i := 0; i <= maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
@@ -288,7 +304,15 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
+				if i == 0 && maxretries == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i > 1 && maxretries > 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				} else if i == maxretries {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				}
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
@@ -314,7 +338,7 @@ func getip(api string, maxretries int) string {
 			return string(ip)
 		}
 
-		for i := 0; i < maxretries; i++ {
+		for i := 0; i <= maxretries; i++ {
 			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
 			req.Header.Set("User-Agent", ua)
 			resp, err := httpClient.Do(req)
@@ -323,7 +347,15 @@ func getip(api string, maxretries int) string {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
 				}
-				fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" times")
+				if i == 0 && maxretries == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i > 1 && maxretries > 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				} else if i == maxretries {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				}
 				time.Sleep(1 * time.Second)
 			} else {
 				defer resp.Body.Close()
