@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -20,9 +22,14 @@ import (
 
 var (
 	version    = "Dev"
-	ua         = "QCIP/" + version
+	ua         = "qcip/" + version
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.Dial("tcp4", addr)
+			},
+		},
 	}
 )
 
@@ -45,7 +52,7 @@ type IPIPResp struct {
 
 // 主函数
 func main() {
-	fmt.Printf("QCIP \033[1;32m%s\033[0m\n", version)
+	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
 	configData := getconfig()
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
@@ -194,6 +201,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				if i == 0 {
 					errhandle("IP API calling error:")
+					errhandle("	Error detail: " + err.Error())
 				}
 				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
 				time.Sleep(1 * time.Second)
@@ -220,6 +228,7 @@ func getip(api string, maxretries int) string {
 			err = json.Unmarshal(respn, &r)
 			if err != nil {
 				errhandle("IP API calling error: " + err.Error())
+				errhandle("	Error detail: " + err.Error())
 				os.Exit(1)
 			}
 			ip := r.IP
@@ -233,6 +242,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				if i == 0 {
 					errhandle("IP API calling error:")
+					errhandle("	Error detail: " + err.Error())
 				}
 				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
 				time.Sleep(1 * time.Second)
@@ -243,6 +253,7 @@ func getip(api string, maxretries int) string {
 				err := json.Unmarshal(respn, &r)
 				if err != nil {
 					errhandle("IP API calling error: " + err.Error())
+					errhandle("	Error detail: " + err.Error())
 					os.Exit(1)
 				}
 				ip := r.IP
@@ -258,6 +269,7 @@ func getip(api string, maxretries int) string {
 			resp, err := httpClient.Do(req)
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
+				errhandle("	Error detail: " + err.Error())
 				os.Exit(1)
 			}
 			defer resp.Body.Close()
@@ -272,6 +284,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				if i == 0 {
 					errhandle("IP API calling error:")
+					errhandle("	Error detail: " + err.Error())
 				}
 				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
 				time.Sleep(1 * time.Second)
@@ -280,6 +293,40 @@ func getip(api string, maxretries int) string {
 				ipo, _ := io.ReadAll(resp.Body)
 				ip := strings.TrimRight(string(ipo), "\n")
 				return ip
+			}
+		}
+		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times")
+		os.Exit(1)
+	} else if api == "IPCONF" {
+		if maxretries == 0 {
+			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err := httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				errhandle("IP API calling error")
+				errhandle("	Error detail: " + err.Error())
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+			ip, _ := io.ReadAll(resp.Body)
+			return string(ip)
+		}
+
+		for i := 0; i < maxretries; i++ {
+			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err := httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				if i == 0 {
+					errhandle("IP API calling error:")
+					errhandle("	Error detail: " + err.Error())
+				}
+				errhandle("	retrying " + strconv.Itoa(i+1) + " time")
+				time.Sleep(1 * time.Second)
+			} else {
+				defer resp.Body.Close()
+				ip, _ := io.ReadAll(resp.Body)
+				return strings.TrimSpace(string(ip))
 			}
 		}
 		errhandle("IP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")

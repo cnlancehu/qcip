@@ -51,27 +51,33 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 南美地区(圣保罗) sa-saopaulo
 ```
 
-目前可用的获取IP的API有 `LanceAPI` `IPIP` `SB`
+目前可用的获取IP的API有 `LanceAPI` `IPIP` `SB` `IPCONF`
+
+> 填写时请注意区分大小写
+
 ```
-LanceAPI // 推荐在海外使用
+IPCONF // 全球通用
+https://ifconfig.co/ip
+
+LanceAPI // 全球通用
 https://api.lance.fun/ip/
 
-IPIP // 推荐在中国大陆使用
+IPIP // 中国大陆通用
 https://myip.ipip.net/ip
 
-SB // 全球通用 但效率较慢
+SB // 全球通用
 https://api-ipv4.ip.sb/ip
 ```
 
 填写时请注意区分大小写
 
 #### 运行
-使用命令行运行
+使用**命令行**运行
 ```bash
-qcip [配置文件路径(可选，默认为config.json)]`
+qcip [配置文件路径，默认为./config.json]
 ```
 
-> **注意** 若你使用 桌面系统 直接双击打开程序，会出现命令行窗口和闪退现象，这并不代表程序运行失败，但是是你无法看到运行结果
+> **注意** 若你使用 **桌面系统** 双击打开程序，会出现命令行窗口和闪退现象，这并不代表运行失败，但是你无法看到运行结果
 
 #### 开机启动(Windows)
 
@@ -85,5 +91,5 @@ qcip [配置文件路径(可选，默认为config.json)]`
 ```
 // qcip.vbs
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd /c /*运行的命令*/", 0, False
+WshShell.Run "cmd /c qcip [配置文件路径]", 0, False
 ```
