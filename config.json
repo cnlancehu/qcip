@@ -2,11 +2,11 @@
     "MType": "MType",
     "SecretId": "SecretId",
     "SecretKey": "SecretKey",
-    "GetIPAPI": "IPIP",
+    "GetIPAPI": "IPCONF",
     "InstanceId": "InstanceId",
     "InstanceRegion": "InstanceRegion",
     "SecurityGroupId": "SecurityGroupId",
     "SecurityGroupRegion": "SecurityGroupRegion",
     "MaxRetries": "3",
-    "Rules": ["iperf3","ssh"]
+    "Rules": ["the-first-rule","the-second-rule"]
 }
