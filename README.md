@@ -2,7 +2,7 @@
 
 ### 状态
 
-![状态](https://api.lance.fun/msg/qcip)
+![状态](https://api.lance.fun/msg/qcippy)
 
 
 腾讯云轻量服务器防火墙来源自动设置脚本
