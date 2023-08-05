@@ -1,6 +1,8 @@
 # qcliteautorip 
 
-### **Python版本已停止维护，请使用最新的Golang版本**
+### 状态
+
+![状态](https://api.lance.fun/msg/qcip)
 
 
 腾讯云轻量服务器防火墙来源自动设置脚本
