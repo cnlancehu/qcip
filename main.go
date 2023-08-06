@@ -24,7 +24,7 @@ var (
 	version    = "Dev"
 	goos       = "os"
 	goarch     = "arch"
-	buildTime  string
+	buildTime  = "time"
 	ua         = "qcip/" + version
 	confPath   = "config.json"
 	httpClient = &http.Client{
