@@ -22,7 +22,11 @@ import (
 
 var (
 	version    = "Dev"
+	goos       = "os"
+	goarch     = "arch"
+	buildTime  string
 	ua         = "qcip/" + version
+	confPath   = "config.json"
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
@@ -50,10 +54,39 @@ type IPIPResp struct {
 	IP string `json:"ip"`
 }
 
-// 主函数
 func main() {
+	if len(os.Args) == 1 {
+		keyfunc()
+		return
+	} else if os.Args[1] == "-v" || os.Args[1] == "--version" {
+		fmt.Printf("QCIP \033[1;32mv%s\033[0m\nRunning on \033[1;33m%s %s\033[0m\nBuild time: %s\nChecking for update...", version, goos, goarch, buildTime)
+		req, _ := http.NewRequest("GET", "https://api.lance.fun/proj/qcip/version", nil)
+		req.Header.Set("User-Agent", ua)
+		resp, err := httpClient.Do(req)
+		if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+			fmt.Printf("\r\033[31mFailed to check updates\033[0m")
+			return
+		}
+		defer resp.Body.Close()
+		latestverbyte, _ := io.ReadAll(resp.Body)
+		latestver := strings.TrimSpace(string(latestverbyte))
+		vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
+		verlatest, _ := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
+		if verlatest > vernow {
+			fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n 	https://github.com/cnlancehu/qcip/releases/tag/%s", latestver, latestver)
+		} else {
+			fmt.Printf("\r\033[1;32mYour are using the latest version\033[0m\n")
+		}
+	} else {
+		confPath = os.Args[1]
+		keyfunc()
+	}
+}
+
+// 功能主函数
+func keyfunc() {
 	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
-	configData := getconfig()
+	configData := getconfig(confPath)
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
 	ip := getip(configData.GetIPAPI, int(maxRetries))
 	if configData.MType == "lh" {
@@ -99,14 +132,7 @@ func cvmmain(configData Config, ip string) {
 }
 
 // 读取配置文件
-func getconfig() Config {
-	var confPath string
-
-	if len(os.Args) > 1 {
-		confPath = os.Args[1]
-	} else {
-		confPath = "config.json"
-	}
+func getconfig(confPath string) Config {
 	config, err := os.ReadFile(confPath)
 	if err != nil {
 		if os.IsNotExist(err) {
