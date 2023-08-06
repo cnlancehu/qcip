@@ -12,7 +12,7 @@ do
     goos="${platform%/*}"
     goarch="${platform#*/}"
     echo "Building for $goos/$goarch"
-    GOOS=$goos GOARCH=$goarch go build -o $output/qcip -ldflags "-X main.version=$version -X ain.goos=$goos -X main.goarch=$goarch main.buildtime=$time -s -w"
+    GOOS=$goos GOARCH=$goarch go build -o $output/qcip -ldflags "-X main.version=$version -X ain.goos=$goos -X main.goarch=$goarch -X main.buildtime=$time -s -w"
 
     if [ $goos = "windows" ]; then
         mv $output/qcip $output/qcip.exe
