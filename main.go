@@ -75,7 +75,7 @@ func main() {
 		if verlatest > vernow {
 			fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n 	https://github.com/cnlancehu/qcip/releases/tag/%s", latestver, latestver)
 		} else {
-			fmt.Printf("\r\033[1;32mYour are using the latest version\033[0m\n")
+			fmt.Printf("\r\033[1;32mYou are using the latest version\033[0m\n")
 		}
 	} else {
 		confPath = os.Args[1]
