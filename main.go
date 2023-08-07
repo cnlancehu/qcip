@@ -26,7 +26,7 @@ var (
 	goarch     = "arch"
 	buildTime  = "time"
 	ua         = "qcip/" + version
-	confPath   = "config.json"
+	confPath   string
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
@@ -58,28 +58,25 @@ func main() {
 	if len(os.Args) == 1 {
 		keyfunc()
 		return
-	} else if os.Args[1] == "-v" || os.Args[1] == "--version" {
-		fmt.Printf("QCIP \033[1;32mv%s\033[0m\nRunning on \033[1;33m%s %s\033[0m\nBuild time: %s\nChecking for update...", version, goos, goarch, buildTime)
-		req, _ := http.NewRequest("GET", "https://api.lance.fun/proj/qcip/version", nil)
-		req.Header.Set("User-Agent", ua)
-		resp, err := httpClient.Do(req)
-		if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-			fmt.Printf("\r\033[31mFailed to check updates\033[0m")
-			return
-		}
-		defer resp.Body.Close()
-		latestverbyte, _ := io.ReadAll(resp.Body)
-		latestver := strings.TrimSpace(string(latestverbyte))
-		vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
-		verlatest, _ := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
-		if verlatest > vernow {
-			fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n 	https://github.com/cnlancehu/qcip/releases/tag/%s", latestver, latestver)
-		} else {
-			fmt.Printf("\r\033[1;32mYou are using the latest version\033[0m\n")
-		}
 	} else {
-		confPath = os.Args[1]
-		keyfunc()
+		for i, arg := range os.Args {
+			if arg == "-h" || arg == "--help" {
+				fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options]\nOptions:\n	-c, --config	Specify the location of the configuration file and run\n	-v, --version	Show version information\n	-h, --help	Show this help page\nExamples:\n	\033[33mqcip\033[0m	Run the program with config.json\n	\033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n	https://github.com/cnlancehu/qcip", version)
+				return
+			} else if arg == "-v" || arg == "--version" {
+				showversion()
+				return
+			} else if arg == "-c" || arg == "--config" {
+				confPath = os.Args[i+1]
+				keyfunc()
+				return
+			} else {
+				if i != 0 {
+					errhandle("Error arguments, run \033[33mqcip -h\033[31m for help")
+					return
+				}
+			}
+		}
 	}
 }
 
@@ -128,6 +125,27 @@ func cvmmain(configData Config, ip string) {
 		fmt.Printf("Successfully modified the firewall rules\n")
 	} else {
 		fmt.Printf("IP is the same\n")
+	}
+}
+
+func showversion() {
+	fmt.Printf("QCIP \033[1;32mv%s\033[0m\nRunning on \033[1;33m%s %s\033[0m\nBuild time: %s\nChecking for update...", version, goos, goarch, buildTime)
+	req, _ := http.NewRequest("GET", "https://api.lance.fun/proj/qcip/version", nil)
+	req.Header.Set("User-Agent", ua)
+	resp, err := httpClient.Do(req)
+	if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+		fmt.Printf("\r\033[31mFailed to check updates\033[0m")
+		return
+	}
+	defer resp.Body.Close()
+	latestverbyte, _ := io.ReadAll(resp.Body)
+	latestver := strings.TrimSpace(string(latestverbyte))
+	vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
+	verlatest, _ := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
+	if verlatest > vernow {
+		fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n 	https://github.com/cnlancehu/qcip/releases/tag/%s", latestver, latestver)
+	} else {
+		fmt.Printf("\r\033[1;32mYou are using the latest version\033[0m\n")
 	}
 }
 
