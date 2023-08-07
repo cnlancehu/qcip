@@ -1,0 +1,14 @@
+name: Version Update
+
+on:
+    release:
+      types: [published]
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Update Version
+          run: |
+            curl https://api.lance.fun/proj/qcip/version/update/${GITHUB_REF##*/} -H "token: ${{ secrets.TOKEN }}"
