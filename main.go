@@ -26,7 +26,7 @@ var (
 	goarch     = "arch"
 	buildTime  = "time"
 	ua         = "qcip/" + version
-	confPath   string
+	confPath   = "config.json"
 	httpClient = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
