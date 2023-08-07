@@ -7,6 +7,11 @@ on:
           description: "Version"
           required: true
           type: string
+        create_release:
+          description: 'Create Release'  
+          required: false
+          default: false
+          type: boolean
 
 permissions:
   contents: read
@@ -30,3 +35,13 @@ jobs:
         with:
           name: artifact
           path: dist/*
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event.inputs.create_release }}
+        with:
+          files: dist/*
+          name: ${{ github.event.inputs.version }}
+          tag_name: ${{ github.event.inputs.version }}
+          draft: true
+          prerelease: false
+          token: ${{ secrets.GHTOKEN }}
