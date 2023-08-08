@@ -113,5 +113,5 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 ```vb
 // qcip.vbs
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd /c qcip [配置文件路径]", 0, False
+WshShell.Run "cmd /c qcip -c [配置文件路径]", 0, False
 ```
