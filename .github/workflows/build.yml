@@ -37,11 +37,14 @@ jobs:
           path: dist/*
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: ${{ github.event.inputs.create_release }}
+        if: ${{ github.event.inputs.create_release == 'true' }}
         with:
           files: dist/*
           name: ${{ github.event.inputs.version }}
           tag_name: ${{ github.event.inputs.version }}
           draft: true
           prerelease: false
+          body: |
+            #### What's changed
+            - 
           token: ${{ secrets.GHTOKEN }}
