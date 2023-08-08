@@ -61,12 +61,16 @@ func main() {
 	} else {
 		for i, arg := range os.Args {
 			if arg == "-h" || arg == "--help" {
-				fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options]\nOptions:\n	-c, --config	Specify the location of the configuration file and run\n	-v, --version	Show version information\n	-h, --help	Show this help page\nExamples:\n	\033[33mqcip\033[0m	Run the program with config.json\n	\033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n	https://github.com/cnlancehu/qcip", version)
+				fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n	-c, --config <path>	Specify the location of the configuration file and run\n	-v, --version	Show version information\n	-h, --help	Show this help page\nExamples:\n	\033[33mqcip\033[0m	Run the program with config.json\n	\033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n	https://github.com/cnlancehu/qcip", version)
 				return
 			} else if arg == "-v" || arg == "--version" {
 				showversion()
 				return
 			} else if arg == "-c" || arg == "--config" {
+				if i == len(os.Args)-1 {
+					errhandle("Error arguments: config path not defined\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
 				confPath = os.Args[i+1]
 				keyfunc()
 				return
