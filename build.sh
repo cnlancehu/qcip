@@ -5,14 +5,14 @@ platforms=("darwin/amd64" "darwin/arm64" "freebsd/386" "freebsd/amd64" "freebsd/
 package="qcip"
 output="dist"
 version=$1
-date=`date +%Y/%m/%d\ %H:%M:%S`
+date=`TZ='Asia/Shanghai' date +%Y/%m/%d\ %H:%M:%S`
 
 for platform in "${platforms[@]}"
 do
     goos="${platform%/*}"
     goarch="${platform#*/}"
     echo "Building for $goos/$goarch"
-    GOOS=$goos GOARCH=$goarch go build -o $output/qcip -ldflags "-X main.version=$version -X main.goos=$goos -X main.goarch=$goarch -X \"main.buildTime=$date\" -s -w"
+    GOOS=$goos GOARCH=$goarch go build -o $output/qcip -ldflags "-X main.version=$version -X main.goos=$goos -X main.goarch=$goarch -X \"main.buildTime=$date UTC+8\" -s -w"
 
     if [ $goos = "windows" ]; then
         mv $output/qcip $output/qcip.exe
