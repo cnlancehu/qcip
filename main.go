@@ -138,7 +138,7 @@ func showversion() {
 	req.Header.Set("User-Agent", ua)
 	resp, err := httpClient.Do(req)
 	if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-		fmt.Printf("\r\033[31mFailed to check updates\033[0m")
+		fmt.Printf("\r\033[31mFailed to check updates\033[0m\n")
 		return
 	}
 	defer resp.Body.Close()
@@ -147,7 +147,7 @@ func showversion() {
 	vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
 	verlatest, _ := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
 	if verlatest > vernow {
-		fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n  https://github.com/cnlancehu/qcip/releases/tag/%s", latestver, latestver)
+		fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n  https://github.com/cnlancehu/qcip/releases/tag/%s\n", latestver, latestver)
 	} else {
 		fmt.Printf("\r\033[1;32mYou are using the latest version\033[0m\n")
 	}

@@ -94,7 +94,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
     -c, --config <配置文件路径>     指定配置文件路径并运行程序
     -v, --version                 显示版本信息
     -h, --help                    显示帮助信息
-示例
+示例:
     qcip # 使用配置文件config.json运行程序
     qcip -c qcipconf.json # 使用配置文件qcipconf.json运行程序
 ```
@@ -115,3 +115,24 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "cmd /c qcip -c [配置文件路径]", 0, False
 ```
+
+### 外部链接
+程序中调用了以下外部链接
+```
+获取最新版本号
+https://api.lance.fun/proj/qcip/version
+
+配置文件中指定的IP查询API
+参见上表
+```
+
+### 常见问题
+#### 在 Windows 命令提示符中运行时出现乱码
+由于 Windows 命令提示符对ANSI编码的支持不完善，因此在 Windows 命令提示符中运行时会出现乱码
+
+解决方法: 使用最新版本的 Windows Terminal 运行
+
+1. 下载 [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701)
+2. 使用 Win+I 打开设置，在 隐私和安全性-开发者选项-终端 中选择 Windows 终端
+
+此时命令提示符将由支持ANSI转义的 Windows Terminal 接管，运行程序时不能够正确显示颜色
