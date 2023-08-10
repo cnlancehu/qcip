@@ -135,4 +135,4 @@ https://api.lance.fun/proj/qcip/version
 1. 下载 [Windows Terminal](https://apps.microsoft.com/store/detail/windows-terminal/9N0DX20HK701)
 2. 使用 Win+I 打开设置，在 隐私和安全性-开发者选项-终端 中选择 Windows 终端
 
-此时命令提示符将由支持ANSI转义的 Windows Terminal 接管，运行程序时不能够正确显示颜色
+此时命令提示符将由支持ANSI转义的 Windows Terminal 接管，运行程序时能够正确显示颜色
