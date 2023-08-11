@@ -122,7 +122,7 @@ func keyfunc() {
 	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
 	configData := getconfig(confPath)
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
-	ip := getip(configData.GetIPAPI, int(maxRetries))
+	ip := getip(configData.GetIPAPI, maxRetries)
 	if configData.MType == "lh" {
 		lhmain(configData, ip)
 	} else if configData.MType == "cvm" {
@@ -186,7 +186,13 @@ func showversion() {
 		fmt.Printf("\r\033[31mFailed to check updates\033[0m\n")
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("\r\033[31mFailed to check updates\033[0m\n")
+			return
+		}
+	}(resp.Body)
 	latestverbyte, _ := io.ReadAll(resp.Body)
 	latestver := strings.TrimSpace(string(latestverbyte))
 	vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
@@ -269,200 +275,80 @@ func getconfig(confPath string) Config {
 
 // 获取自身公网IP
 func getip(api string, maxretries int) string {
-	if maxretries < 0 {
-		errhandle("Config error: maxretries should be an integer greater than or equal to 0")
-		errexit()
+	if maxretries < 0 || maxretries > 10 {
+		errhandle("Config error: maxretries should be an integer greater than or equal to 0 and less than or equal to 10")
+	}
+	fetchapi := func(apiaddress string) []byte {
+		var (
+			req    *http.Request
+			resp   *http.Response
+			err    error
+			failed bool
+		)
+		for i := 0; i <= maxretries; i++ {
+			req, _ = http.NewRequest("GET", apiaddress, nil)
+			req.Header.Set("User-Agent", ua)
+			resp, err = httpClient.Do(req)
+			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
+				failed = true
+				if i == 0 {
+					errhandle("IP API calling error:")
+					errhandle("	Error detail: " + err.Error())
+				}
+				if i == 0 && maxretries == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i == 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
+				} else if i > 1 && maxretries > 1 {
+					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				} else if i == maxretries {
+					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+				}
+				time.Sleep(1 * time.Second)
+			} else {
+				break
+			}
+		}
+		if failed {
+			errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+			errexit()
+		}
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				errhandle("IP API calling error")
+				errhandle("	Error detail: " + err.Error())
+				errexit()
+				return
+			}
+		}(resp.Body)
+		respcontent, err := io.ReadAll(resp.Body)
+		if err != nil {
+			errhandle("IP API calling error: " + err.Error())
+			errexit()
+		}
+		return respcontent
 	}
 	if api == "LanceAPI" {
-		if maxretries == 0 {
-			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				errhandle("IP API calling error")
-				errhandle("	Error detail: " + err.Error())
-				errexit()
-			}
-			defer resp.Body.Close()
-			ip, _ := io.ReadAll(resp.Body)
-			return string(ip)
-		}
-
-		for i := 0; i <= maxretries; i++ {
-			req, _ := http.NewRequest("GET", "https://api.lance.fun/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				if i == 0 {
-					errhandle("IP API calling error:")
-					errhandle("	Error detail: " + err.Error())
-				}
-				if i == 0 && maxretries == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i > 1 && maxretries > 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				} else if i == maxretries {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				}
-				time.Sleep(1 * time.Second)
-			} else {
-				defer resp.Body.Close()
-				ip, _ := io.ReadAll(resp.Body)
-				return string(ip)
-			}
-		}
-		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		errexit()
+		return string(fetchapi("https://api.lance.fun/ip"))
 	} else if api == "IPIP" {
-		if maxretries == 0 {
-			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				errhandle("IP API calling error")
-				errhandle("	Error detail: " + err.Error())
-				errexit()
-			}
-			defer resp.Body.Close()
-			respn, _ := io.ReadAll(resp.Body)
-			var r IPIPResp
-			err = json.Unmarshal(respn, &r)
-			if err != nil {
-				errhandle("IP API calling error: " + err.Error())
-				errhandle("	Error detail: " + err.Error())
-				errexit()
-			}
-			ip := r.IP
-			return string(ip)
+		var r IPIPResp
+		err := json.Unmarshal(fetchapi("https://myip.ipip.net/ip"), &r)
+		if err != nil {
+			errhandle("IP API calling error: " + err.Error())
+			errhandle("	Error detail: " + err.Error())
+			errexit()
 		}
-
-		for i := 0; i <= maxretries; i++ {
-			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				if i == 0 {
-					errhandle("IP API calling error:")
-					errhandle("	Error detail: " + err.Error())
-				}
-				if i == 0 && maxretries == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i > 1 && maxretries > 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				} else if i == maxretries {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				}
-				time.Sleep(1 * time.Second)
-			} else {
-				defer resp.Body.Close()
-				respn, _ := io.ReadAll(resp.Body)
-				var r IPIPResp
-				err := json.Unmarshal(respn, &r)
-				if err != nil {
-					errhandle("IP API calling error: " + err.Error())
-					errhandle("	Error detail: " + err.Error())
-					errexit()
-				}
-				ip := r.IP
-				return string(ip)
-			}
-		}
-		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		errexit()
+		return r.IP
 	} else if api == "SB" {
-		if maxretries == 0 {
-			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				errhandle("IP API calling error")
-				errhandle("	Error detail: " + err.Error())
-				errexit()
-			}
-			defer resp.Body.Close()
-			ipo, _ := io.ReadAll(resp.Body)
-			ip := strings.TrimRight(string(ipo), "\n")
-			return ip
-		}
-		for i := 0; i <= maxretries; i++ {
-			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				if i == 0 {
-					errhandle("IP API calling error:")
-					errhandle("	Error detail: " + err.Error())
-				}
-				if i == 0 && maxretries == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i > 1 && maxretries > 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				} else if i == maxretries {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				}
-				time.Sleep(1 * time.Second)
-			} else {
-				defer resp.Body.Close()
-				ipo, _ := io.ReadAll(resp.Body)
-				ip := strings.TrimRight(string(ipo), "\n")
-				return ip
-			}
-		}
-		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times")
-		errexit()
+		return strings.TrimRight(string(fetchapi("https://api-ipv4.ip.sb/ip")), "\n")
 	} else if api == "IPCONF" {
-		if maxretries == 0 {
-			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				errhandle("IP API calling error")
-				errhandle("	Error detail: " + err.Error())
-				errexit()
-			}
-			defer resp.Body.Close()
-			ip, _ := io.ReadAll(resp.Body)
-			return string(ip)
-		}
-
-		for i := 0; i <= maxretries; i++ {
-			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
-			req.Header.Set("User-Agent", ua)
-			resp, err := httpClient.Do(req)
-			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
-				if i == 0 {
-					errhandle("IP API calling error:")
-					errhandle("	Error detail: " + err.Error())
-				}
-				if i == 0 && maxretries == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i > 1 && maxretries > 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				} else if i == maxretries {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				}
-				time.Sleep(1 * time.Second)
-			} else {
-				defer resp.Body.Close()
-				ip, _ := io.ReadAll(resp.Body)
-				return strings.TrimSpace(string(ip))
-			}
-		}
-		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		errexit()
+		return strings.TrimSpace(string(fetchapi("https://ifconfig.co/ip")))
 	} else {
 		errhandle("IP API calling error: unknown API " + api)
 		errexit()
+		return ""
 	}
-	return ""
 }
 
 // 轻量应用服务器部分
