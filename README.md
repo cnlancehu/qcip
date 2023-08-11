@@ -102,12 +102,14 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 
 > **注意** 若你使用 **桌面系统** 双击打开程序，会出现命令行窗口和闪退现象，这并不代表运行失败，但是你无法看到运行结果
 
+
 #### 开机启动(Windows)
 
 你可以在下面的目录(启动项文件夹)中添加该程序的快捷方式或运行程序的批处理文件(bat)
 `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup`
 
 > 因为程序依赖于配置文件，请不要直接把程序本体拖入启动项文件夹
+
 
 #### Windows 通知
 以Windows通知卡的形式发送运行结果
@@ -124,6 +126,7 @@ qcip -c config.json -n
 
 该功能搭配[开机启动](#开机启动windows)和[隐藏命令行窗口](#隐藏命令行窗口windows)使用效果更佳
 
+
 #### 隐藏命令行窗口(Windows)
 
 若要隐藏命令行窗口，可以使用以下 vbs 脚本运行程序
@@ -133,6 +136,7 @@ qcip -c config.json -n
 Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "cmd /c [启动 qcip 的命令]", 0, False
 ```
+
 
 ### 外部链接
 程序中调用了以下外部链接
