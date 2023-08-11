@@ -22,7 +22,7 @@ import (
 
 var (
 	version    = "Dev"
-	goos       = "windows"
+	goos       = "os"
 	goarch     = "arch"
 	buildTime  = "time"
 	action     string
