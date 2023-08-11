@@ -94,6 +94,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
     -c, --config <配置文件路径>     指定配置文件路径并运行程序
     -v, --version                 显示版本信息
     -h, --help                    显示帮助信息
+    -n, --winnotify               使用Windows通知显示结果
 示例:
     qcip # 使用配置文件config.json运行程序
     qcip -c qcipconf.json # 使用配置文件qcipconf.json运行程序
@@ -108,12 +109,29 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 
 > 因为程序依赖于配置文件，请不要直接把程序本体拖入启动项文件夹
 
-使用以下脚本运行以隐藏命令行窗口
+#### Windows 通知
+以Windows通知卡的形式发送运行结果
+
+要启用 Windows 通知，你可以使用`-n`运行参数
+
+例如
+```bash
+qcip -n
+qcip -c config.json -n
+```
+
+> **注意** `-n`只能在程序主功能中运行，即不可以在`-v`或`-h`中使用
+
+该功能搭配[开机启动](#开机启动windows)和[隐藏命令行窗口](#隐藏命令行窗口windows)使用效果更佳
+
+#### 隐藏命令行窗口(Windows)
+
+若要隐藏命令行窗口，可以使用以下 vbs 脚本运行程序
 
 ```vb
 // qcip.vbs
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run "cmd /c qcip -c [配置文件路径]", 0, False
+WshShell.Run "cmd /c [启动 qcip 的命令]", 0, False
 ```
 
 ### 外部链接

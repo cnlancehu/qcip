@@ -18,13 +18,16 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	lighthouse "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse/v20200324"
 	vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
+	"gopkg.in/toast.v1"
 )
 
 var (
 	version    = "Dev"
-	goos       = "os"
+	goos       = "windows"
 	goarch     = "arch"
 	buildTime  = "time"
+	action     string
+	notifa     bool
 	ua         = "qcip/" + version
 	confPath   = "config.json"
 	httpClient = &http.Client{
@@ -61,25 +64,53 @@ func main() {
 	} else {
 		for i, arg := range os.Args {
 			if arg == "-h" || arg == "--help" {
-				fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip", version)
-				return
+				if action != "" {
+					errhandle("Error arguments: " + arg + " cannot be used with other arguments\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
+				action = "help"
 			} else if arg == "-v" || arg == "--version" {
-				showversion()
-				return
+				if action != "" {
+					errhandle("Error arguments: " + arg + " cannot be used with other arguments\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
+				action = "version"
 			} else if arg == "-c" || arg == "--config" {
+				if action != "" {
+					errhandle("Error arguments: " + arg + " cannot be used with other arguments\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
+				action = "run"
 				if i == len(os.Args)-1 {
 					errhandle("Error arguments: config path not defined\nRun \033[33mqcip -h\033[31m for help")
 					return
 				}
 				confPath = os.Args[i+1]
-				keyfunc()
-				return
-			} else {
-				if i != 0 {
-					errhandle("Error arguments, run \033[33mqcip -h\033[31m for help")
+			} else if arg == "-n" || arg == "--winnotify" {
+				if goos == "windows" {
+					notifa = true
+				} else {
+					errhandle("Error arguments: " + arg + " is only available on Windows")
 					return
 				}
 			}
+		}
+		if action == "run" {
+			keyfunc()
+		} else if action == "version" {
+			if notifa {
+				errhandle("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
+				return
+			}
+			showversion()
+		} else if action == "help" {
+			if notifa {
+				errhandle("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
+				return
+			}
+			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page\n  -n, --winnotify	Send notifacation cards, only available on Windows\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip", version)
+		} else if action == "" && notifa {
+			keyfunc()
 		}
 	}
 }
@@ -110,8 +141,24 @@ func lhmain(configData Config, ip string) {
 		fmt.Printf("IP is different, start updating\n")
 		lhmodifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
+		if notifa {
+			notification := toast.Notification{
+				AppID:   "QCIP",
+				Title:   "QCIP | Succsss",
+				Message: "Successfully modified the firewall rules",
+			}
+			notification.Push()
+		}
 	} else {
 		fmt.Printf("IP is the same\n")
+		if notifa {
+			notification := toast.Notification{
+				AppID:   "QCIP",
+				Title:   "QCIP | Succsss",
+				Message: "IP is the same",
+			}
+			notification.Push()
+		}
 	}
 }
 
@@ -127,8 +174,24 @@ func cvmmain(configData Config, ip string) {
 		fmt.Printf("IP is different, start updating\n")
 		sgmodifyrules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
+		if notifa {
+			notification := toast.Notification{
+				AppID:   "QCIP",
+				Title:   "QCIP | Succsss",
+				Message: "Successfully modified the firewall rules",
+			}
+			notification.Push()
+		}
 	} else {
 		fmt.Printf("IP is the same\n")
+		if notifa {
+			notification := toast.Notification{
+				AppID:   "QCIP",
+				Title:   "QCIP | Succsss",
+				Message: "IP is the same",
+			}
+			notification.Push()
+		}
 	}
 }
 
@@ -159,25 +222,25 @@ func getconfig(confPath string) Config {
 	if err != nil {
 		if os.IsNotExist(err) {
 			errhandle("Config error: config file " + confPath + " does not exist")
-			os.Exit(1)
+			errexit()
 		}
 		errhandle("Config error: " + err.Error())
-		os.Exit(1)
+		errexit()
 	}
 	var configData Config
 	if !json.Valid(config) {
 		errhandle("Config error: config file is not valid json")
-		os.Exit(1)
+		errexit()
 	}
 	err = json.Unmarshal(config, &configData)
 	if err != nil {
 		decodeErr := json.Unmarshal(config, &configData)
 		if decodeErr != nil {
 			errhandle("Config error: config file format is incorrect")
-			os.Exit(1)
+			errexit()
 		}
 		errhandle("Config error: " + err.Error())
-		os.Exit(1)
+		errexit()
 	}
 	var requiredKeys []string
 	if configData.MType == "lh" {
@@ -187,10 +250,10 @@ func getconfig(confPath string) Config {
 	} else {
 		if configData.MType == "" {
 			errhandle("Config error: machine type is empty")
-			os.Exit(1)
+			errexit()
 		} else {
 			errhandle("Config error: machine type " + configData.MType + " is incorrect")
-			os.Exit(1)
+			errexit()
 		}
 	}
 	checkPassing := true
@@ -216,7 +279,7 @@ func getconfig(confPath string) Config {
 				errhandle("	" + key + " is incorrect")
 			}
 		}
-		os.Exit(1)
+		errexit()
 	}
 	fmt.Printf("Config loaded\n")
 	return configData
@@ -226,7 +289,7 @@ func getconfig(confPath string) Config {
 func getip(api string, maxretries int) string {
 	if maxretries < 0 {
 		errhandle("Config error: maxretries should be an integer greater than or equal to 0")
-		os.Exit(1)
+		errexit()
 	}
 	if api == "LanceAPI" {
 		if maxretries == 0 {
@@ -236,7 +299,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
 				errhandle("	Error detail: " + err.Error())
-				os.Exit(1)
+				errexit()
 			}
 			defer resp.Body.Close()
 			ip, _ := io.ReadAll(resp.Body)
@@ -269,7 +332,7 @@ func getip(api string, maxretries int) string {
 			}
 		}
 		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		os.Exit(1)
+		errexit()
 	} else if api == "IPIP" {
 		if maxretries == 0 {
 			req, _ := http.NewRequest("GET", "https://myip.ipip.net/ip", nil)
@@ -278,7 +341,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
 				errhandle("	Error detail: " + err.Error())
-				os.Exit(1)
+				errexit()
 			}
 			defer resp.Body.Close()
 			respn, _ := io.ReadAll(resp.Body)
@@ -287,7 +350,7 @@ func getip(api string, maxretries int) string {
 			if err != nil {
 				errhandle("IP API calling error: " + err.Error())
 				errhandle("	Error detail: " + err.Error())
-				os.Exit(1)
+				errexit()
 			}
 			ip := r.IP
 			return string(ip)
@@ -320,14 +383,14 @@ func getip(api string, maxretries int) string {
 				if err != nil {
 					errhandle("IP API calling error: " + err.Error())
 					errhandle("	Error detail: " + err.Error())
-					os.Exit(1)
+					errexit()
 				}
 				ip := r.IP
 				return string(ip)
 			}
 		}
 		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		os.Exit(1)
+		errexit()
 	} else if api == "SB" {
 		if maxretries == 0 {
 			req, _ := http.NewRequest("GET", "https://api-ipv4.ip.sb/ip", nil)
@@ -336,7 +399,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
 				errhandle("	Error detail: " + err.Error())
-				os.Exit(1)
+				errexit()
 			}
 			defer resp.Body.Close()
 			ipo, _ := io.ReadAll(resp.Body)
@@ -370,7 +433,7 @@ func getip(api string, maxretries int) string {
 			}
 		}
 		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times")
-		os.Exit(1)
+		errexit()
 	} else if api == "IPCONF" {
 		if maxretries == 0 {
 			req, _ := http.NewRequest("GET", "https://ifconfig.co/ip", nil)
@@ -379,7 +442,7 @@ func getip(api string, maxretries int) string {
 			if err != nil || (resp.StatusCode >= 400 && resp.StatusCode <= 599) {
 				errhandle("IP API calling error")
 				errhandle("	Error detail: " + err.Error())
-				os.Exit(1)
+				errexit()
 			}
 			defer resp.Body.Close()
 			ip, _ := io.ReadAll(resp.Body)
@@ -412,10 +475,10 @@ func getip(api string, maxretries int) string {
 			}
 		}
 		errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
-		os.Exit(1)
+		errexit()
 	} else {
 		errhandle("IP API calling error: unknown API " + api)
-		os.Exit(1)
+		errexit()
 	}
 	return ""
 }
@@ -433,10 +496,7 @@ func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while fetching rules for lighthouse:")
 		errhandle("	" + err.Error())
-		os.Exit(1)
-	}
-	if err != nil {
-		panic(err)
+		errexit()
 	}
 	return response.Response.FirewallRuleSet
 }
@@ -479,11 +539,8 @@ func lhmodifyrules(credential *common.Credential, InstanceRegion string, Instanc
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while modifying rules for lighthouse:")
 		errhandle("	" + err.Error())
-		os.Exit(1)
+		errexit()
 		return
-	}
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -498,10 +555,7 @@ func sggetrules(credential *common.Credential, SecurityGroupId string, SecurityG
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while fetching rules for security group:")
 		errhandle("	" + err.Error())
-		os.Exit(1)
-	}
-	if err != nil {
-		panic(err)
+		errexit()
 	}
 	return response.Response.SecurityGroupPolicySet
 }
@@ -546,10 +600,7 @@ func sgmodifyrules(credential *common.Credential, SecurityGroupId string, Securi
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while modifying rules for security group:")
 		errhandle("	" + err.Error())
-		os.Exit(1)
-	}
-	if err != nil {
-		panic(err)
+		errexit()
 	}
 }
 
@@ -579,4 +630,16 @@ func processRules(ptrRules interface{}) interface{} {
 
 func errhandle(errmsg string) {
 	fmt.Printf("\033[31m%s\033[0m\n", errmsg)
+}
+
+func errexit() {
+	if notifa {
+		notification := toast.Notification{
+			AppID:   "QCIP",
+			Title:   "QCIP | Error",
+			Message: "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.",
+		}
+		notification.Push()
+	}
+	os.Exit(1)
 }

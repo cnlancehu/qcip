@@ -1,6 +1,10 @@
+github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d h1:VhgPp6v9qf9Agr/56bj7Y/xa04UccTW04VP0Qed4vnQ=
+github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d/go.mod h1:YUTz3bUH2ZwIWBy3CJBeOBEugqcmXREj14T+iG/4k4U=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.718 h1:Y3rnawBLb/0I+S8VrfQS7/el+9hbpL8TtxG7Cs9KI6k=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.718/go.mod h1:7sCQWVkxcsR38nffDW057DRGk8mUjK1Ing/EFOK8s8Y=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse v1.0.718 h1:7VznT66hLDw8sPEoO5YCgxOuvOgxG3lpvQ4f7ZvyEZc=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse v1.0.718/go.mod h1:5ElO/8/GueXg6GW6KSZjOvvr9oXg983kq9VLmrj6lPI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.718 h1:DZxHtSui30gat3RMZ0QbF5RghitwRzzJvGf7EIrztyU=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.718/go.mod h1:GZJzT4aQqvmf/ZBhPaXDqkQBV38RyHs1Yu1t+AqIjPM=
+gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2 h1:MZF6J7CV6s/h0HBkfqebrYfKCVEo5iN+wzE4QhV3Evo=
+gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2/go.mod h1:s1Sn2yZos05Qfs7NKt867Xe18emOmtsO3eAKbDaon0o=
