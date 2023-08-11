@@ -18,7 +18,6 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	lighthouse "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse/v20200324"
 	vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
-	"gopkg.in/toast.v1"
 )
 
 var (
@@ -108,7 +107,7 @@ func main() {
 				errhandle("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
 				return
 			}
-			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page\n  -n, --winnotify	Send notifacation cards, only available on Windows\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip", version)
+			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page\n  -n, --winnotify	Send notifacation cards, only available on Windows\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version)
 		} else if action == "" && notifa {
 			keyfunc()
 		}
@@ -142,22 +141,12 @@ func lhmain(configData Config, ip string) {
 		lhmodifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		if notifa {
-			notification := toast.Notification{
-				AppID:   "QCIP",
-				Title:   "QCIP | Succsss",
-				Message: "Successfully modified the firewall rules",
-			}
-			notification.Push()
+			notify("QCIP | Succsss", "Successfully modified the firewall rules")
 		}
 	} else {
 		fmt.Printf("IP is the same\n")
 		if notifa {
-			notification := toast.Notification{
-				AppID:   "QCIP",
-				Title:   "QCIP | Succsss",
-				Message: "IP is the same",
-			}
-			notification.Push()
+			notify("QCIP | Succsss", "IP is the same")
 		}
 	}
 }
@@ -175,22 +164,12 @@ func cvmmain(configData Config, ip string) {
 		sgmodifyrules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		if notifa {
-			notification := toast.Notification{
-				AppID:   "QCIP",
-				Title:   "QCIP | Succsss",
-				Message: "Successfully modified the firewall rules",
-			}
-			notification.Push()
+			notify("QCIP | Succsss", "Successfully modified the firewall rules")
 		}
 	} else {
 		fmt.Printf("IP is the same\n")
 		if notifa {
-			notification := toast.Notification{
-				AppID:   "QCIP",
-				Title:   "QCIP | Succsss",
-				Message: "IP is the same",
-			}
-			notification.Push()
+			notify("QCIP | Succsss", "IP is the same")
 		}
 	}
 }
@@ -634,12 +613,7 @@ func errhandle(errmsg string) {
 
 func errexit() {
 	if notifa {
-		notification := toast.Notification{
-			AppID:   "QCIP",
-			Title:   "QCIP | Error",
-			Message: "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.",
-		}
-		notification.Push()
+		notify("QCIP | Error", "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.")
 	}
 	os.Exit(1)
 }
