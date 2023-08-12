@@ -294,23 +294,22 @@ func getip(api string, maxretries int) string {
 				if i == 0 {
 					errhandle("IP API calling error:")
 					errhandle("	Error detail: " + err.Error())
+					continue
 				}
-				if i == 0 && maxretries == 1 {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i+1)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i == 1 {
+				if maxretries != 0 {
 					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" time")
-				} else if i > 1 && maxretries > 1 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
-				} else if i == maxretries {
-					fmt.Printf("\r\033[31m%s\033[0m\n", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxretries)+" times")
+					time.Sleep(1 * time.Second)
 				}
-				time.Sleep(1 * time.Second)
 			} else {
 				break
 			}
 		}
 		if failed {
-			errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+			if maxretries != 0 {
+				errhandle("\nIP API call failed " + fmt.Sprint(maxretries) + " times, exiting...")
+			} else {
+				errhandle("IP API call failed, exiting...")
+			}
 			errexit()
 		}
 		defer func(Body io.ReadCloser) {

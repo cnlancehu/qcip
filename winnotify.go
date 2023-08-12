@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package main
 
@@ -14,6 +13,9 @@ func init() {
 			Title:   title,
 			Message: message,
 		}
-		notification.Push()
+		err := notification.Push()
+		if err != nil {
+			errhandle("Error while sending notification: " + err.Error())
+		}
 	}
 }
