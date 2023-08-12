@@ -7,6 +7,7 @@ import (
 )
 
 func init() {
+	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
 	notify = func(title string, message string) {
 		notification := toast.Notification{
 			AppID:   "QCIP",

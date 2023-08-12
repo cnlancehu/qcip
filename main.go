@@ -21,15 +21,16 @@ import (
 )
 
 var (
-	version    = "Dev"
-	goos       = "os"
-	goarch     = "arch"
-	buildTime  = "time"
-	action     string
-	notifa     bool
-	ua         = "qcip/" + version
-	confPath   = "config.json"
-	httpClient = &http.Client{
+	version       = "Dev"
+	goos          = "os"
+	goarch        = "arch"
+	buildTime     = "time"
+	action        string
+	notifa        bool
+	notifyHelpMsg = ""
+	ua            = "qcip/" + version
+	confPath      = "config.json"
+	httpClient    = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -108,7 +109,7 @@ func main() {
 				errhandle("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
 				return
 			}
-			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page\n  -n, --winnotify	Send notifacation cards, only available on Windows\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version)
+			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page%s\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version, notifyHelpMsg)
 		} else if action == "" && notifa {
 			keyfunc()
 		} else {
