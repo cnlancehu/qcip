@@ -158,3 +158,19 @@ https://api.lance.fun/proj/qcip/version
 2. 使用 Win+I 打开设置，在 隐私和安全性-开发者选项-终端 中选择 Windows 终端
 
 此时命令提示符将由支持ANSI转义的 Windows Terminal 接管，运行程序时能够正确显示颜色
+
+#### 在 Linux 中未找到 GLIBC 库
+具体错误信息如下
+```
+version `GLIBC_2.32' not found
+version `GLIBC_2.34' not found
+```
+
+在 `1.0.2` 及之前的构建默认启用了 CGO 编译，因此在 Linux 中运行时需要 GLIBC 2.32 及以上的版本
+
+解决方法
+- 使用最新的QCIP版本(`1.0.3` 及之后)
+
+或
+
+- 使用最新的 Linux 版本 

@@ -20,6 +20,20 @@ import (
 	vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
 )
 
+/*
+初始化变量值
+version goos goarch buildTime 将在构建时自动替换
+
+version        程序版本号
+goos           程序适配的系统
+goarch         程序适配的架构
+buildTime      构建时间
+action         程序运行时要执行的行为
+notifa         是否启用 windows 通知
+notifyHelpMsg  windows 通知的默认帮助信息，在除windows外的系统不显示
+ua             程序获取 ip 时的 useragent
+confPath       默认配置文件路径
+*/
 var (
 	version       = "Dev"
 	goos          = "os"

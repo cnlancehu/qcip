@@ -7,6 +7,8 @@ import (
 )
 
 func init() {
+	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
+
 	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
 	notify = func(title string, message string) {
 		notification := toast.Notification{
