@@ -38,7 +38,7 @@ var (
 			},
 		},
 	}
-	notify = func(title, msg string) {} // 禁用的通知函数
+	notify = func(title, msg string, succeed bool) {} // 禁用的通知函数
 )
 
 type Config struct {
@@ -145,12 +145,12 @@ func lhmain(configData Config, ip string) {
 		lhmodifyrules(credential, configData.InstanceRegion, configData.InstanceId, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		if notifa {
-			notify("QCIP | Succsss", "Successfully modified the firewall rules")
+			notify("QCIP | Succsss", "Successfully modified the firewall rules", true)
 		}
 	} else {
 		fmt.Printf("IP is the same\n")
 		if notifa {
-			notify("QCIP | Succsss", "IP is the same")
+			notify("QCIP | Succsss", "IP is the same", true)
 		}
 	}
 }
@@ -168,12 +168,12 @@ func cvmmain(configData Config, ip string) {
 		sgmodifyrules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		if notifa {
-			notify("QCIP | Succsss", "Successfully modified the firewall rules")
+			notify("QCIP | Succsss", "Successfully modified the firewall rules", true)
 		}
 	} else {
 		fmt.Printf("IP is the same\n")
 		if notifa {
-			notify("QCIP | Succsss", "IP is the same")
+			notify("QCIP | Succsss", "IP is the same", true)
 		}
 	}
 }
@@ -502,7 +502,7 @@ func errhandle(errmsg string) {
 
 func errexit() {
 	if notifa {
-		notify("QCIP | Error", "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.")
+		notify("QCIP | Error", "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.", false)
 	}
 	os.Exit(1)
 }
