@@ -21,16 +21,16 @@ import (
 )
 
 var (
-	version       = "Dev"             // 程序版本号
-	goos          = "os"              // 程序运行的操作系统
-	goarch        = "arch"            // 程序运行的操作系统架构
-	buildTime     = "time"            // 程序编译时间
-	action        string              // 程序运行的行为
-	notifa        bool                // 是否启用 windows 通知
-	notifyHelpMsg = ""                // 帮助信息中的通知信息
-	ua            = "qcip/" + version // 请求的 User-Agent
-	confPath      = "config.json"     // 默认配置文件路径
-	httpClient    = &http.Client{
+	version       string       = "Dev"             // 程序版本号
+	goos          string       = "os"              // 程序运行的操作系统
+	goarch        string       = "arch"            // 程序运行的操作系统架构
+	buildTime     string       = "time"            // 程序编译时间
+	action        string                           // 程序运行的行为
+	notifa        bool                             // 是否启用 windows 通知
+	notifyHelpMsg string       = ""                // 帮助信息中的通知信息
+	ua            string       = "qcip/" + version // 请求的 User-Agent
+	confPath      string       = "config.json"     // 默认配置文件路径
+	httpClient    *http.Client = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
