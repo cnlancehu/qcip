@@ -4,7 +4,6 @@ package main
 
 import (
 	"os"
-	"runtime"
 
 	"gopkg.in/toast.v1"
 )
@@ -92,7 +91,7 @@ func init() {
 		if err != nil {
 			errhandle("Error while sending notification: " + err.Error())
 			err = nil
-			runtime.Goexit()
+			errexit()
 		}
 	}
 	notify = func(title string, message string, succeed bool) {

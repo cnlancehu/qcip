@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	version       string       = "Dev"             // 程序版本号
+	version       string       = "0.0.0"           // 程序版本号
 	goos          string       = "os"              // 程序运行的操作系统
 	goarch        string       = "arch"            // 程序运行的操作系统架构
 	buildTime     string       = "time"            // 程序编译时间
@@ -109,7 +109,7 @@ func main() {
 				errhandle("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
 				return
 			}
-			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>	Specify the location of the configuration file and run\n  -v, --version		Show version information\n  -h, --help		Show this help page%s\nExamples:\n  \033[33mqcip\033[0m	Run the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m	Specify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version, notifyHelpMsg)
+			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>\tSpecify the location of the configuration file and run\n  -v, --version\t\tShow version information\n  -h, --help\t\tShow this help page%s\nExamples:\n  \033[33mqcip\033[0m\tRun the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m\tSpecify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version, notifyHelpMsg)
 		} else if action == "" && notifa {
 			keyfunc()
 		} else {
@@ -179,7 +179,7 @@ func cvmmain(configData Config, ip string) {
 }
 
 func showversion() {
-	fmt.Printf("QCIP \033[1;32mv%s\033[0m\nRunning on \033[1;33m%s %s\033[0m\nBuild time: %s\nChecking for update...", version, goos, goarch, buildTime)
+	fmt.Printf("QCIP \033[1;32mv%s\033[0m | \033[1;33m%s %s\033[0m\nBuild time: %s\nChecking for update...", version, goos, goarch, buildTime)
 	req, _ := http.NewRequest("GET", "https://api.lance.fun/proj/qcip/version", nil)
 	req.Header.Set("User-Agent", ua)
 	resp, err := httpClient.Do(req)
@@ -188,16 +188,25 @@ func showversion() {
 		return
 	}
 	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+		err = Body.Close()
 		if err != nil {
 			fmt.Printf("\r\033[31mFailed to check updates\033[0m\n")
 			return
 		}
 	}(resp.Body)
-	latestverbyte, _ := io.ReadAll(resp.Body)
-	latestver := strings.TrimSpace(string(latestverbyte))
-	vernow, _ := strconv.Atoi(strings.Replace(version, ".", "", -1))
-	verlatest, _ := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
+	errcheck := func() {
+		if err != nil {
+			fmt.Printf("\r\033[31mFailed to check updates\033[0m\n")
+			errexit()
+		}
+	}
+	latestverbyte, err := io.ReadAll(resp.Body)
+	errcheck()
+	latestver := string(latestverbyte)
+	vernow, err := strconv.Atoi(strings.Replace(version, ".", "", -1))
+	errcheck()
+	verlatest, err := strconv.Atoi(strings.Replace(latestver, ".", "", -1))
+	errcheck()
 	if verlatest > vernow {
 		fmt.Printf("\rNew version available: \033[1;32m%s\033[0m\nDownload it here: \n  https://github.com/cnlancehu/qcip/releases/tag/%s\n", latestver, latestver)
 	} else {
