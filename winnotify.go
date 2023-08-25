@@ -85,29 +85,28 @@ var (
 
 func init() {
 	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
-
+	var erroroccurred bool = false
 	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
-	handleerr := func() {
+	notifyerrhandle := func(err error) {
 		if err != nil {
-			errhandle("Error while sending notification: " + err.Error())
 			err = nil
-			errexit()
+			erroroccurred = true
 		}
 	}
 	notify = func(title string, message string, succeed bool) {
 		var tmpFile *os.File
 		tmpFile, err = os.CreateTemp("", "qcip-*.svg")
-		handleerr()
+		notifyerrhandle(err)
 		if succeed {
 			tmpFile.Write(successicon)
 		} else {
 			tmpFile.Write(failedicon)
 		}
 		err = tmpFile.Close()
-		handleerr()
+		notifyerrhandle(err)
 		iconpath := tmpFile.Name()
 		var notification toast.Notification
-		if err == nil {
+		if !erroroccurred {
 			notification = toast.Notification{
 				AppID:   "QCIP",
 				Title:   title,
@@ -115,7 +114,6 @@ func init() {
 				Icon:    iconpath,
 			}
 		} else {
-			errhandle("Error while showing notification icon: " + err.Error())
 			notification = toast.Notification{
 				AppID:   "QCIP",
 				Title:   title,
@@ -123,6 +121,8 @@ func init() {
 			}
 		}
 		err = notification.Push()
-		handleerr()
+		if erroroccurred {
+			errhandle("Error occurred when sending notification cards")
+		}
 	}
 }
