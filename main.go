@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -21,16 +22,18 @@ import (
 )
 
 var (
-	version       string       = "0.0.0"           // 程序版本号
-	goos          string       = "os"              // 程序运行的操作系统
-	goarch        string       = "arch"            // 程序运行的操作系统架构
-	buildTime     string       = "time"            // 程序编译时间
-	action        string                           // 程序运行的行为
-	notifa        bool                             // 是否启用 windows 通知
-	notifyHelpMsg string       = ""                // 帮助信息中的通知信息
-	ua            string       = "qcip/" + version // 请求的 User-Agent
-	confPath      string       = "config.json"     // 默认配置文件路径
-	httpClient    *http.Client = &http.Client{
+	version        string = "0.0.0"           // 程序版本号
+	goos           string = "windows"         // 程序运行的操作系统
+	goarch         string = "arch"            // 程序运行的操作系统架构
+	buildTime      string = "time"            // 程序编译时间
+	action         string                     // 程序运行的行为
+	notifa         bool                       // 是否启用 windows 通知
+	notifyHelpMsg  string = ""                // 帮助信息中的通知信息
+	ua             string = "qcip/" + version // 请求的 User-Agent
+	confPath       string = "config.json"     // 默认配置文件路径
+	errmsglist     map[int]string
+	errhandletimes int          = 0
+	httpClient     *http.Client = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -56,6 +59,10 @@ type Config struct {
 
 type IPIPResp struct {
 	IP string `json:"ip"`
+}
+
+func init() {
+	errmsglist = make(map[int]string)
 }
 
 func main() {
@@ -506,12 +513,26 @@ func processRules(ptrRules interface{}) interface{} {
 }
 
 func errhandle(errmsg string) {
+	errhandletimes++
+	errmsglist[errhandletimes] = errmsg
 	fmt.Printf("\033[31m%s\033[0m\n", errmsg)
 }
 
 func errexit() {
+	var (
+		keys      []int
+		allerrmsg string
+	)
+	for k := range errmsglist {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		allerrmsg += errmsglist[k] + "\n"
+	}
+	allerrmsg = strings.ReplaceAll(allerrmsg, "\t", "    ")
 	if notifa {
-		notify("QCIP | Error", "QCIP has encountered an error and has exited.\nPlease run and check the error message in the console for details.", false)
+		notify("QCIP | Error", allerrmsg, false)
 	}
 	os.Exit(1)
 }
