@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,18 +23,18 @@ import (
 )
 
 var (
-	version        string = "0.0.0"           // 程序版本号
-	goos           string = "windows"         // 程序运行的操作系统
-	goarch         string = "arch"            // 程序运行的操作系统架构
-	buildTime      string = "time"            // 程序编译时间
-	action         string                     // 程序运行的行为
-	notifa         bool                       // 是否启用 windows 通知
-	notifyHelpMsg  string = ""                // 帮助信息中的通知信息
-	ua             string = "qcip/" + version // 请求的 User-Agent
-	confPath       string = "config.json"     // 默认配置文件路径
-	errmsglist     map[int]string
-	errhandletimes int          = 0
-	httpClient     *http.Client = &http.Client{
+	version        string         = "0.0.0"           // 程序版本号
+	goos           string         = runtime.GOOS      // 程序运行的操作系统
+	goarch         string         = runtime.GOARCH    // 程序运行的操作系统架构
+	buildTime      string         = "buildTime"       // 程序编译时间
+	action         string                             // 程序运行的行为
+	notifa         bool                               // 是否启用 windows 通知
+	notifyHelpMsg  string         = ""                // 帮助信息中的通知信息
+	ua             string         = "qcip/" + version // 请求的 User-Agent
+	confPath       string         = "config.json"     // 默认配置文件路径
+	errmsglist     map[int]string                     // 错误信息列表
+	errhandletimes int            = 0                 // 错误输出的次数
+	httpClient     *http.Client   = &http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -41,7 +42,7 @@ var (
 			},
 		},
 	}
-	notify = func(title, msg string, succeed bool) {} // 禁用的通知函数
+	notify = func(title, msg string, succeed bool) {} // 默认禁用的通知函数
 )
 
 type Config struct {
@@ -277,11 +278,11 @@ func getconfig(confPath string) Config {
 		errhandle("Config error:")
 		for _, key := range requiredKeys {
 			if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
-				errhandle("	" + key + " not found")
+				errhandle("\t" + key + " not found")
 			} else if reflect.ValueOf(configData).FieldByName(key).String() == "" {
-				errhandle("	" + key + " is empty")
+				errhandle("\t" + key + " is empty")
 			} else if reflect.ValueOf(configData).FieldByName(key).String() == key {
-				errhandle("	" + key + " is incorrect")
+				errhandle("\t" + key + " is incorrect")
 			}
 		}
 		errexit()
@@ -310,7 +311,7 @@ func getip(api string, maxretries int) string {
 				failed = true
 				if i == 0 {
 					errhandle("IP API calling error:")
-					errhandle("	Error detail: " + err.Error())
+					errhandle("\tError detail: " + err.Error())
 					continue
 				}
 				if maxretries != 0 {
@@ -333,7 +334,7 @@ func getip(api string, maxretries int) string {
 			err := Body.Close()
 			if err != nil {
 				errhandle("IP API calling error")
-				errhandle("	Error detail: " + err.Error())
+				errhandle("\tError detail: " + err.Error())
 				errexit()
 				return
 			}
@@ -352,7 +353,7 @@ func getip(api string, maxretries int) string {
 		err := json.Unmarshal(fetchapi("https://myip.ipip.net/ip"), &r)
 		if err != nil {
 			errhandle("IP API calling error: " + err.Error())
-			errhandle("	Error detail: " + err.Error())
+			errhandle("\tError detail: " + err.Error())
 			errexit()
 		}
 		return r.IP
@@ -370,6 +371,7 @@ func getip(api string, maxretries int) string {
 // 轻量应用服务器部分
 func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId string) []*lighthouse.FirewallRuleInfo {
 	cpf := profile.NewClientProfile()
+	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "lighthouse.tencentcloudapi.com"
 	client, _ := lighthouse.NewClient(credential, InstanceRegion, cpf)
 	request := lighthouse.NewDescribeFirewallRulesRequest()
@@ -379,7 +381,7 @@ func lhgetrules(credential *common.Credential, InstanceRegion string, InstanceId
 	response, err := client.DescribeFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while fetching rules for lighthouse:")
-		errhandle("	" + err.Error())
+		errhandle("\t" + err.Error())
 		errexit()
 	}
 	return response.Response.FirewallRuleSet
@@ -414,6 +416,7 @@ func lhmodifyrules(credential *common.Credential, InstanceRegion string, Instanc
 		}
 	}
 	cpf := profile.NewClientProfile()
+	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "lighthouse.tencentcloudapi.com"
 	client, _ := lighthouse.NewClient(credential, InstanceRegion, cpf)
 	request := lighthouse.NewModifyFirewallRulesRequest()
@@ -422,7 +425,7 @@ func lhmodifyrules(credential *common.Credential, InstanceRegion string, Instanc
 	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while modifying rules for lighthouse:")
-		errhandle("	" + err.Error())
+		errhandle("\t" + err.Error())
 		errexit()
 		return
 	}
@@ -431,6 +434,7 @@ func lhmodifyrules(credential *common.Credential, InstanceRegion string, Instanc
 // 云服务器安全组部分
 func sggetrules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string) *vpc.SecurityGroupPolicySet {
 	cpf := profile.NewClientProfile()
+	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
 	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
 	request := vpc.NewDescribeSecurityGroupPoliciesRequest()
@@ -438,7 +442,7 @@ func sggetrules(credential *common.Credential, SecurityGroupId string, SecurityG
 	response, err := client.DescribeSecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while fetching rules for security group:")
-		errhandle("	" + err.Error())
+		errhandle("\t" + err.Error())
 		errexit()
 	}
 	return response.Response.SecurityGroupPolicySet
@@ -463,6 +467,7 @@ func sgmatch(rules *vpc.SecurityGroupPolicySet, ip string, config Config) (*vpc.
 
 func sgmodifyrules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string, rules *vpc.SecurityGroupPolicySet) {
 	cpf := profile.NewClientProfile()
+	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
 	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
 	request := vpc.NewModifySecurityGroupPoliciesRequest()
@@ -483,7 +488,7 @@ func sgmodifyrules(credential *common.Credential, SecurityGroupId string, Securi
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errhandle("Error while modifying rules for security group:")
-		errhandle("	" + err.Error())
+		errhandle("\t" + err.Error())
 		errexit()
 	}
 }
@@ -513,25 +518,27 @@ func processRules(ptrRules interface{}) interface{} {
 }
 
 func errhandle(errmsg string) {
-	errhandletimes++
-	errmsglist[errhandletimes] = errmsg
+	if notifa {
+		errhandletimes++
+		errmsglist[errhandletimes] = errmsg
+	}
 	fmt.Printf("\033[31m%s\033[0m\n", errmsg)
 }
 
 func errexit() {
-	var (
-		keys      []int
-		allerrmsg string
-	)
-	for k := range errmsglist {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	for _, k := range keys {
-		allerrmsg += errmsglist[k] + "\n"
-	}
-	allerrmsg = strings.ReplaceAll(allerrmsg, "\t", "    ")
 	if notifa {
+		var (
+			keys      []int
+			allerrmsg string
+		)
+		for k := range errmsglist {
+			keys = append(keys, k)
+		}
+		sort.Ints(keys)
+		for _, k := range keys {
+			allerrmsg += errmsglist[k] + "\n"
+		}
+		allerrmsg = strings.ReplaceAll(allerrmsg, "\t", "    ")
 		notify("QCIP | Error", allerrmsg, false)
 	}
 	os.Exit(1)

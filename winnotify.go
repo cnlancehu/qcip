@@ -14,14 +14,14 @@ var (
 	successicon []byte
 	//go:embed static/failed.ico
 	failedicon []byte
-	err        error
+	err        error = nil
 )
 
 func init() {
 	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
 	var erroroccurred bool = false
 	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
-	notifyerrhandle := func(err error) {
+	notifyerrhandle := func() {
 		if err != nil {
 			err = nil
 			erroroccurred = true
@@ -30,14 +30,14 @@ func init() {
 	notify = func(title string, message string, succeed bool) {
 		var tmpFile *os.File
 		tmpFile, err = os.CreateTemp("", "qcip-*.ico")
-		notifyerrhandle(err)
+		notifyerrhandle()
 		if succeed {
 			tmpFile.Write(successicon)
 		} else {
 			tmpFile.Write(failedicon)
 		}
 		err = tmpFile.Close()
-		notifyerrhandle(err)
+		notifyerrhandle()
 		iconpath := tmpFile.Name()
 		var notification toast.Notification
 		if !erroroccurred {
@@ -55,6 +55,7 @@ func init() {
 			}
 		}
 		err = notification.Push()
+		notifyerrhandle()
 		if erroroccurred {
 			errhandle("Error occurred when sending notification cards")
 		}
