@@ -16,12 +16,13 @@ do
 
     if [ $goos = "windows" ]; then
         mv $output/qcip $output/qcip.exe
-        zip -j $output/$package-$goos-$goarch.zip $output/qcip.exe config.json
-        rm $output/qcip.exe
+        mv winconfig.json $output/config.json
+        zip -j $output/$package-$goos-$goarch.zip $output/qcip.exe $output/config.json
+        rm $output/qcip.exe $output/config.json
     else
-        mv $output/qcip qcip
-        tar -czf $output/$package-$goos-$goarch.tar.gz qcip config.json
-        rm qcip
+        mv config.json $output/config.json
+        tar -czf $output/$package-$goos-$goarch.tar.gz $output/qcip $output/config.json
+        rm $output/qcip $output/config.json
     fi
 done
 cd $output

@@ -1,0 +1,13 @@
+{
+    "MType": "MType",
+    "SecretId": "SecretId",
+    "SecretKey": "SecretKey",
+    "GetIPAPI": "IPCONF",
+    "InstanceId": "InstanceId",
+    "InstanceRegion": "InstanceRegion",
+    "SecurityGroupId": "SecurityGroupId",
+    "SecurityGroupRegion": "SecurityGroupRegion",
+    "MaxRetries": "3",
+    "EnableWinNotify": false,
+    "Rules": ["the-first-rule","the-second-rule"]
+}

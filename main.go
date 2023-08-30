@@ -55,6 +55,7 @@ type Config struct {
 	SecurityGroupId     string
 	SecurityGroupRegion string
 	MaxRetries          string
+	EnableWinNotify     bool
 	Rules               []string
 }
 
@@ -247,6 +248,13 @@ func getconfig(confPath string) Config {
 		}
 		errhandle("Config error: " + err.Error())
 		errexit()
+	}
+	if configData.EnableWinNotify {
+		if goos != "windows" {
+			errhandle("Config error: EnableWinNotify is only available on Windows")
+			errexit()
+		}
+		notifa = true
 	}
 	var requiredKeys []string
 	if configData.MType == "lh" {
