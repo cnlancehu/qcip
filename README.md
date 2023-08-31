@@ -24,7 +24,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 
 编辑配置文件
 
-![编辑配置文件](https://github.com/cnlancehu/qcip/assets/106385654/c5c16c7d-1a1f-4d74-81e3-80ad505849b9 "配置填写教程")
+![编辑配置文件](https://github.com/cnlancehu/qcip/assets/106385654/66a83ddc-f034-441f-879c-1c0f9fa19390 "配置填写教程")
 
 `InstanceRegion`和`SecurityGroupRegion`的填写请参见下表
 
