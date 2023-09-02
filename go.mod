@@ -3,9 +3,9 @@ module qcip
 go 1.21
 
 require (
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.718
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse v1.0.718
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.718
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.739
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse v1.0.739
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc v1.0.739
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
 )
 

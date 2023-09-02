@@ -21,24 +21,24 @@ func init() {
 	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
 	var erroroccurred bool = false
 	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
-	notifyerrhandle := func() {
+	notifyerrcheck := func() {
 		if err != nil {
 			err = nil
 			erroroccurred = true
 		}
 	}
 	notify = func(title string, message string, succeed bool) {
-		var tmpFile *os.File
-		tmpFile, err = os.CreateTemp("", "qcip-*.ico")
-		notifyerrhandle()
+		var iconFile *os.File
+		iconFile, err = os.CreateTemp("", "qcip-*.ico")
+		notifyerrcheck()
 		if succeed {
-			tmpFile.Write(successicon)
+			iconFile.Write(successicon)
 		} else {
-			tmpFile.Write(failedicon)
+			iconFile.Write(failedicon)
 		}
-		err = tmpFile.Close()
-		notifyerrhandle()
-		iconpath := tmpFile.Name()
+		err = iconFile.Close()
+		notifyerrcheck()
+		iconpath := iconFile.Name()
 		var notification toast.Notification
 		if !erroroccurred {
 			notification = toast.Notification{
@@ -55,7 +55,7 @@ func init() {
 			}
 		}
 		err = notification.Push()
-		notifyerrhandle()
+		notifyerrcheck()
 		if erroroccurred {
 			errhandle("Error occurred when sending notification cards")
 		}
