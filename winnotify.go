@@ -11,53 +11,75 @@ import (
 
 var (
 	//go:embed static/success.ico
-	successicon []byte
+	successIcon []byte
 	//go:embed static/failed.ico
-	failedicon []byte
-	err        error = nil
+	failedIcon []byte
+	err        error
 )
 
 func init() {
 	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
-	var erroroccurred bool = false
+	var errOccurred = false
 	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
-	notifyerrcheck := func() {
+	notifyErrCheck := func() {
 		if err != nil {
 			err = nil
-			erroroccurred = true
+			errOccurred = true
 		}
 	}
 	notify = func(title string, message string, succeed bool) {
+		genNotifyAndLog := func(succeed bool, notification toast.Notification, iconPath string) toast.Notification {
+			notification = toast.Notification{
+				AppID:   "QCIP",
+				Title:   title,
+				Message: "Some error occurred, please check the error log for details",
+			}
+			if iconPath != "" {
+				notification.Icon = iconPath
+			}
+			if !succeed {
+				err = os.WriteFile("error.log", []byte(message), 0644)
+				if err != nil {
+					notification.Message = message
+					return notification
+				}
+				errLogPath, _ := os.Getwd()
+				errLogPath += "\\error.log"
+				notification.Actions = []toast.Action{
+					{
+						Type:      "protocol",
+						Label:     "Show error logs",
+						Arguments: errLogPath,
+					},
+				}
+			} else {
+				notification.Message = message
+			}
+			return notification
+		}
 		var iconFile *os.File
 		iconFile, err = os.CreateTemp("", "qcip-*.ico")
-		notifyerrcheck()
+		notifyErrCheck()
 		if succeed {
-			iconFile.Write(successicon)
+			_, err = iconFile.Write(successIcon)
+			notifyErrCheck()
 		} else {
-			iconFile.Write(failedicon)
+			_, err = iconFile.Write(failedIcon)
+			notifyErrCheck()
 		}
 		err = iconFile.Close()
-		notifyerrcheck()
-		iconpath := iconFile.Name()
+		notifyErrCheck()
+		iconPath := iconFile.Name()
 		var notification toast.Notification
-		if !erroroccurred {
-			notification = toast.Notification{
-				AppID:   "QCIP",
-				Title:   title,
-				Message: message,
-				Icon:    iconpath,
-			}
+		if !errOccurred {
+			notification = genNotifyAndLog(succeed, notification, iconPath)
 		} else {
-			notification = toast.Notification{
-				AppID:   "QCIP",
-				Title:   title,
-				Message: message,
-			}
+			notification = genNotifyAndLog(succeed, notification, "")
 		}
 		err = notification.Push()
-		notifyerrcheck()
-		if erroroccurred {
-			errhandle("Error occurred when sending notification cards")
+		notifyErrCheck()
+		if errOccurred {
+			errOutput("Error occurred when sending notification cards")
 		}
 	}
 }
