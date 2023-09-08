@@ -491,8 +491,8 @@ func SGModifyRules(credential *common.Credential, SecurityGroupId string, Securi
 		ptrRules.Ingress[a].SecurityGroupId = nil
 		ptrRules.Ingress[a].AddressTemplate = nil
 	}
-	rulesfin := processRules(ptrRules).(*vpc.SecurityGroupPolicySet)
-	request.SecurityGroupPolicySet = rulesfin
+	FinalRules := processRules(ptrRules).(*vpc.SecurityGroupPolicySet)
+	request.SecurityGroupPolicySet = FinalRules
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while modifying rules for security group:")

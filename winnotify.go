@@ -5,6 +5,7 @@ package main
 import (
 	_ "embed"
 	"os"
+	"time"
 
 	"gopkg.in/toast.v1"
 )
@@ -38,13 +39,13 @@ func init() {
 				notification.Icon = iconPath
 			}
 			if !succeed {
-				err = os.WriteFile("error.log", []byte(message), 0644)
+				err = os.WriteFile("qciperrlog.txt", []byte("QCIP error log | "+time.Now().Format("2006-01-02 15:04:05")+"\n"+message), 0644)
 				if err != nil {
 					notification.Message = message
 					return notification
 				}
 				errLogPath, _ := os.Getwd()
-				errLogPath += "\\error.log"
+				errLogPath += "\\qciperrlog.txt"
 				notification.Actions = []toast.Action{
 					{
 						Type:      "protocol",
