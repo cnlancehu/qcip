@@ -43,6 +43,7 @@ var (
 		},
 	}
 	notify = func(title, msg string, succeed bool) {} // 默认禁用的通知函数
+	ipAddr string                                     // 用户的IP地址
 )
 
 type Config struct {
@@ -103,26 +104,47 @@ func main() {
 					errOutput("Error arguments: " + arg + " is only available on Windows")
 					return
 				}
+			} else if arg == "-ip" || arg == "--ipaddr" {
+				if i == len(os.Args)-1 {
+					errOutput("Error arguments: ip address not defined\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
+				ipAddr = os.Args[i+1]
+				if net.ParseIP(ipAddr) == nil {
+					errOutput("Error arguments: ip address is incorrect\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
 			}
 		}
 		if action == "run" {
 			keyFunc()
 		} else if action == "version" {
+			if ipAddr != "" {
+				errOutput("Error arguments: you can only specify ip address when the program runs\nRun \033[33mqcip -h\033[31m for help")
+				return
+			}
 			if EnableWinNotify {
 				errOutput("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
 				return
 			}
 			showVersionInfo()
 		} else if action == "help" {
+			if ipAddr != "" {
+				errOutput("Error arguments: you can only specify ip address when the program runs\nRun \033[33mqcip -h\033[31m for help")
+				return
+			}
 			if EnableWinNotify {
 				errOutput("Error arguments: you can only enable notifacation when the program runs\nRun \033[33mqcip -h\033[31m for help")
 				return
 			}
-			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c, --config <path>\tSpecify the location of the configuration file and run\n  -v, --version\t\tShow version information\n  -h, --help\t\tShow this help page%s\nExamples:\n  \033[33mqcip\033[0m\tRun the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m\tSpecify to use the configuration file qcipconf.json and run the program\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version, notifyHelpMsg)
+			fmt.Printf("QCIP \033[1;32mv%s\033[0m\nUsuage:	qcip [options] [<value>]\nOptions:\n  -c  --config <path>\tSpecify the location of the configuration file and run\n  -v  --version\t\tShow version information\n  -h  --help\t\tShow this help page\n  -ip --ipaddr <ip>\tSpecify to use custom ip address%s\nExamples:\n  \033[33mqcip\033[0m\tRun the program with config.json\n  \033[33mqcip -c qcipconf.json\033[0m\tSpecify to use the configuration file qcipconf.json and run the program\n  \033[33mqcip -ip 1.1.1.1\033[0m\tSpecify to use ip 1.1.1.1 instead of autoget\nVisit our Github repo for more helps\n  https://github.com/cnlancehu/qcip\n", version, notifyHelpMsg)
 		} else if action == "" && EnableWinNotify {
+			keyFunc()
+		} else if action == "" && ipAddr != "" {
 			keyFunc()
 		} else {
 			errOutput("Error arguments: unknown arguments\nRun \033[33mqcip -h\033[31m for help")
+			return
 		}
 	}
 }
@@ -132,11 +154,13 @@ func keyFunc() {
 	fmt.Printf("QCIP \033[1;32mv%s\033[0m\n", version)
 	configData := getConfig(confPath)
 	maxRetries, _ := strconv.Atoi(configData.MaxRetries)
-	ip := getIPaddr(configData.GetIPAPI, maxRetries)
+	if ipAddr == "" {
+		ipAddr = getIPaddr(configData.GetIPAPI, maxRetries)
+	}
 	if configData.MType == "lh" {
-		lhMain(configData, ip)
+		lhMain(configData, ipAddr)
 	} else if configData.MType == "cvm" {
-		cvmMain(configData, ip)
+		cvmMain(configData, ipAddr)
 	}
 	os.Exit(0)
 }

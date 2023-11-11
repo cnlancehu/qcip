@@ -21,7 +21,7 @@ var (
 func init() {
 	// 系统为 windows 时，启用 winnotify 并显示对应的帮助信息
 	var errOccurred = false
-	notifyHelpMsg = "\n  -n, --winnotify	Send notifacation cards, only available on Windows"
+	notifyHelpMsg = "\n  -n  --winnotify\tSend notifacation cards, only available on Windows"
 	notifyErrCheck := func() {
 		if err != nil {
 			err = nil

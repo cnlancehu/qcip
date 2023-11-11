@@ -89,15 +89,17 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 使用**命令行**运行
 
 ```bash
-使用方法: qcip [选项] <值>
+使用方法: qcip [选项] [<值>]
 选项:
-    -c, --config <配置文件路径>     指定配置文件路径并运行程序
-    -v, --version                 显示版本信息
-    -h, --help                    显示帮助信息
-    -n, --winnotify               使用Windows通知显示结果
+    -c  --config <配置文件路径>     指定配置文件路径并运行程序
+    -v  --version                 显示版本信息
+    -h  --help                    显示帮助信息
+    -n  --winnotify               使用Windows通知显示结果
+    -ip --ipaddr <IP地址>          直接使用指定的IP地址替换，而不是自动获取
 示例:
     qcip # 使用配置文件config.json运行程序
     qcip -c qcipconf.json # 使用配置文件qcipconf.json运行程序
+    qcip -ip 1.1.1.1      # 指定使用 ip 1.1.1.1
 ```
 
 > **注意** 若你使用 **桌面系统** 双击打开程序，会出现命令行窗口和闪退现象，这并不代表运行失败，但是你无法看到运行结果
