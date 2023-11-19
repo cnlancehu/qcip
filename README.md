@@ -114,7 +114,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 
 
 #### Windows 通知
-以Windows通知卡的形式发送运行结果
+以 Windows 通知卡的形式发送运行结果
 
 <img align="right" width="250" src="https://github.com/cnlancehu/qcip/assets/106385654/6d9dc257-581e-49dc-8eb0-ad16d4f19820">
 
@@ -129,6 +129,15 @@ qcip -c config.json -n
 ```
 
 > **注意** `-n`只能在程序主功能中运行，即不可以在`-v`或`-h`中使用
+
+或者在配置文件中，启用以下参数以永久开启 Windows 通知
+
+```json
+// config.json
+{
+    "EnableWinNotify": true
+}
+```
 
 该功能搭配[开机启动](#开机启动windows)和[隐藏命令行窗口](#隐藏命令行窗口windows)使用效果更佳
 

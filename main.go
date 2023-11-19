@@ -110,8 +110,13 @@ func main() {
 					return
 				}
 				ipAddr = os.Args[i+1]
-				if net.ParseIP(ipAddr) == nil {
+				ip := net.ParseIP(ipAddr)
+				if ip == nil {
 					errOutput("Error arguments: ip address is incorrect\nRun \033[33mqcip -h\033[31m for help")
+					return
+				}
+				if ip.To4() == nil {
+					errOutput("Error arguments: ip address is not ipv4\nRun \033[33mqcip -h\033[31m for help")
 					return
 				}
 			}
@@ -504,19 +509,7 @@ func SGModifyRules(credential *common.Credential, SecurityGroupId string, Securi
 	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
 	request := vpc.NewModifySecurityGroupPoliciesRequest()
 	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
-	ptrRules := &vpc.SecurityGroupPolicySet{}
-	ptrRules.Version = rules.Version
-	ptrRules.Egress = nil
-	ptrRules.Ingress = rules.Ingress
-	for a := range ptrRules.Ingress {
-		ptrRules.Ingress[a].SecurityGroupId = &SecurityGroupId
-		ptrRules.Ingress[a].PolicyIndex = nil
-		ptrRules.Ingress[a].Ipv6CidrBlock = nil
-		ptrRules.Ingress[a].SecurityGroupId = nil
-		ptrRules.Ingress[a].AddressTemplate = nil
-	}
-	FinalRules := processRules(ptrRules).(*vpc.SecurityGroupPolicySet)
-	request.SecurityGroupPolicySet = FinalRules
+	request.SecurityGroupPolicySet = processRules(rules, SecurityGroupId)
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while modifying rules for security group:")
@@ -525,8 +518,18 @@ func SGModifyRules(credential *common.Credential, SecurityGroupId string, Securi
 	}
 }
 
-// 把ptrRules中内容为空的值替换为nil
-func processRules(ptrRules interface{}) interface{} {
+func processRules(rules *vpc.SecurityGroupPolicySet, SecurityGroupId string) *vpc.SecurityGroupPolicySet {
+	for i := range rules.Ingress {
+		rules.Ingress[i].PolicyIndex = nil
+	}
+	for i := range rules.Egress {
+		rules.Egress[i].PolicyIndex = nil
+	}
+	rules = replaceEmptyValue(rules).(*vpc.SecurityGroupPolicySet)
+	return rules
+}
+
+func replaceEmptyValue(ptrRules interface{}) interface{} {
 	v := reflect.ValueOf(ptrRules)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -536,13 +539,13 @@ func processRules(ptrRules interface{}) interface{} {
 		if field.Kind() == reflect.Ptr && !field.IsNil() && field.Elem().Kind() == reflect.String && field.Elem().String() == "" {
 			field.Set(reflect.Zero(field.Type()))
 		} else if field.Kind() == reflect.Struct {
-			processRules(field.Addr().Interface())
+			replaceEmptyValue(field.Addr().Interface())
 		} else if field.Kind() == reflect.Ptr && !field.IsNil() && field.Elem().Kind() == reflect.Struct {
-			processRules(field.Interface())
+			replaceEmptyValue(field.Interface())
 		} else if field.Kind() == reflect.Slice && field.Type().Elem().Kind() == reflect.Ptr && field.Type().Elem().Elem().Kind() == reflect.Struct {
 			for j := 0; j < field.Len(); j++ {
 				elem := field.Index(j)
-				processRules(elem.Interface())
+				replaceEmptyValue(elem.Interface())
 			}
 		}
 	}
