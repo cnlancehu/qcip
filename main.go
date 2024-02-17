@@ -315,11 +315,11 @@ func getConfig(confPath string) Config {
 		errOutput("Config error:")
 		for _, key := range requiredKeys {
 			if _, ok := reflect.TypeOf(configData).FieldByName(key); !ok {
-				errOutput("\t" + key + " not found")
+				errOutput("  " + key + " not found")
 			} else if reflect.ValueOf(configData).FieldByName(key).String() == "" {
-				errOutput("\t" + key + " is empty")
+				errOutput("  " + key + " is empty")
 			} else if reflect.ValueOf(configData).FieldByName(key).String() == key {
-				errOutput("\t" + key + " is incorrect")
+				errOutput("  " + key + " is incorrect")
 			}
 		}
 		errExit()
@@ -348,11 +348,11 @@ func getIPaddr(api string, maxRetries int) string {
 				failed = true
 				if i == 0 {
 					errOutput("IP API calling error:")
-					errOutput("\tError detail: " + err.Error())
+					errOutput("  Error detail: " + err.Error())
 					continue
 				}
 				if maxRetries != 0 {
-					fmt.Printf("\r\033[31m%s\033[0m", "	retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxRetries)+" time")
+					fmt.Printf("\r\033[31m%s\033[0m", "    retrying "+strconv.Itoa(i)+"/"+strconv.Itoa(maxRetries)+" time")
 					time.Sleep(1 * time.Second)
 				}
 			} else {
@@ -361,7 +361,8 @@ func getIPaddr(api string, maxRetries int) string {
 		}
 		if failed {
 			if maxRetries != 0 {
-				errOutput("\nIP API call failed " + fmt.Sprint(maxRetries) + " times, exiting...")
+				fmt.Printf("\n")
+				errOutput("IP API call failed " + fmt.Sprint(maxRetries) + " times, exiting...")
 			} else {
 				errOutput("IP API call failed, exiting...")
 			}
@@ -371,7 +372,7 @@ func getIPaddr(api string, maxRetries int) string {
 			err := Body.Close()
 			if err != nil {
 				errOutput("IP API calling error")
-				errOutput("\tError detail: " + err.Error())
+				errOutput("  Error detail: " + err.Error())
 				errExit()
 				return
 			}
@@ -390,7 +391,7 @@ func getIPaddr(api string, maxRetries int) string {
 		err := json.Unmarshal(fetchApi("https://myip.ipip.net/ip"), &r)
 		if err != nil {
 			errOutput("IP API calling error: " + err.Error())
-			errOutput("\tError detail: " + err.Error())
+			errOutput("  Error detail: " + err.Error())
 			errExit()
 		}
 		return r.IP
@@ -418,7 +419,7 @@ func LHGetRules(credential *common.Credential, InstanceRegion string, InstanceId
 	response, err := client.DescribeFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while fetching rules for lighthouse:")
-		errOutput("\t" + err.Error())
+		errOutput("  " + err.Error())
 		errExit()
 	}
 	return response.Response.FirewallRuleSet
@@ -462,7 +463,7 @@ func LHModifyRules(credential *common.Credential, InstanceRegion string, Instanc
 	_, err := client.ModifyFirewallRules(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while modifying rules for lighthouse:")
-		errOutput("\t" + err.Error())
+		errOutput("  " + err.Error())
 		errExit()
 		return
 	}
@@ -479,7 +480,7 @@ func SGGetRules(credential *common.Credential, SecurityGroupId string, SecurityG
 	response, err := client.DescribeSecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while fetching rules for security group:")
-		errOutput("\t" + err.Error())
+		errOutput("  " + err.Error())
 		errExit()
 	}
 	return response.Response.SecurityGroupPolicySet
@@ -509,16 +510,16 @@ func SGModifyRules(credential *common.Credential, SecurityGroupId string, Securi
 	client, _ := vpc.NewClient(credential, SecurityGroupRegion, cpf)
 	request := vpc.NewModifySecurityGroupPoliciesRequest()
 	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
-	request.SecurityGroupPolicySet = processRules(rules, SecurityGroupId)
+	request.SecurityGroupPolicySet = processRules(rules)
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while modifying rules for security group:")
-		errOutput("\t" + err.Error())
+		errOutput("  " + err.Error())
 		errExit()
 	}
 }
 
-func processRules(rules *vpc.SecurityGroupPolicySet, SecurityGroupId string) *vpc.SecurityGroupPolicySet {
+func processRules(rules *vpc.SecurityGroupPolicySet) *vpc.SecurityGroupPolicySet {
 	for i := range rules.Ingress {
 		rules.Ingress[i].PolicyIndex = nil
 	}
@@ -573,7 +574,7 @@ func errExit() {
 		for _, k := range keys {
 			allErrMsg += errMsgList[k] + "\n"
 		}
-		allErrMsg = strings.ReplaceAll(allErrMsg, "\t", "    ")
+		allErrMsg = strings.ReplaceAll(allErrMsg, "\t", "  ")
 		notify("QCIP | Error", allErrMsg, false)
 	}
 	os.Exit(1)

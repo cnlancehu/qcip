@@ -95,7 +95,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
     -v  --version                 显示版本信息
     -h  --help                    显示帮助信息
     -n  --winnotify               使用Windows通知显示结果
-    -ip --ipaddr <IP地址>          直接使用指定的IP地址替换，而不是自动获取
+    -ip --ipaddr <IP地址>          直接使用指定的IP地址替换，而不是自动获取 仅支持ipv4
 示例:
     qcip # 使用配置文件config.json运行程序
     qcip -c qcipconf.json # 使用配置文件qcipconf.json运行程序
