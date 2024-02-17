@@ -1,15 +1,15 @@
 # qcip
 
-自动设置**腾讯云服务器**的防火墙来源限制，使服务器重要端口只能被运行者的ip访问
+自动设置**腾讯云服务器** **阿里云服务器**的防火墙来源限制，使服务器重要端口只能被运行者的ip访问
 
-目前已支持云产品: 腾讯云服务器 腾讯云轻量应用服务器
+目前已支持云产品: 腾讯云服务器 腾讯云轻量应用服务器 阿里云轻量应用服务器
 
 ### 状态
 
 ![状态](https://api.lance.fun/proj/qcip/status)
 
 ### 实现原理
-qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯云api的脚本。它利用腾讯云安全组的来源限制功能(即防火墙规则只对指定IP生效)的功能，把指定防火墙规则的来源设置设定为本机(即运行这个程序的设备)的公网IPv4地址。这样，开放重要端口的防火墙规则只会对本机生效。
+qcip依赖于云服务商api实现其功能，简单来说，是一个调用腾讯云api的脚本。它利用腾讯云安全组的来源限制功能(即防火墙规则只对指定IP生效)的功能，把指定防火墙规则的来源设置设定为本机(即运行这个程序的设备)的公网IPv4地址。这样，开放重要端口的防火墙规则只会对本机生效。
 
 ### 使用
 #### 下载程序
@@ -18,7 +18,7 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 > 0.3.0版本以前的发布都是[Python版本](https://github.com/cnlancehu/qcip/tree/python)，不建议使用
 
 #### 编辑配置
-请事先在[腾讯云访问管理](https://console.cloud.tencent.com/cam/capi "腾讯云访问管理")创建API密钥
+请事先在[腾讯云访问管理](https://console.cloud.tencent.com/cam/capi "腾讯云访问管理")或者[阿里云访问管理](https://ram.console.aliyun.com/manage/ak "阿里云访问管理")创建API密钥
 
 在刚刚下载下来的压缩包中，你可以找到配置文件`config.json`
 
@@ -26,8 +26,12 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 
 ![编辑配置文件](https://github.com/cnlancehu/qcip/assets/106385654/66a83ddc-f034-441f-879c-1c0f9fa19390 "配置填写教程")
 
+其中 阿里云轻量应用服务器的 `MType` 字段为 `allh`，其他部分与腾讯云轻量应用服务器同理
+
 `InstanceRegion`和`SecurityGroupRegion`的填写请参见下表
 
+> **腾讯云**
+> 
 > 华北地区(北京) ap-beijing
 >
 > 西南地区(成都) ap-chengdu
@@ -63,6 +67,30 @@ qcip依赖于腾讯云api实现其功能，简单来说，是一个调用腾讯�
 > 亚太地区(雅加达) ap-jakarta
 >
 > 南美地区(圣保罗) sa-saopaulo
+> 
+> **阿里云**
+> 
+> 中国（青岛） cn-qingdao
+>
+> 中国（北京） cn-beijing
+>
+> 中国（张家口） cn-zhangjiakou
+>
+> 中国（呼和浩特） cn-huhehaote
+>
+> 中国（杭州） cn-hangzhou
+>
+> 中国（上海） cn-shanghai
+>
+> 中国（深圳） cn-shenzhen
+>
+> 中国（成都） cn-chengdu
+>
+> 中国（广州） cn-guangzhou
+>
+> 中国（香港） cn-hongkong
+>
+> 新加坡 ap-southeast-1
 
 
 目前可用的获取IP的API有 `LanceAPI` `IPIP` `SB` `IPCONF`
