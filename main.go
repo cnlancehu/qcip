@@ -23,9 +23,9 @@ import (
 	qc_vpc "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/v20170312"
 
 	// aliyun
-	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
-	swas_open20200601 "github.com/alibabacloud-go/swas-open-20200601/client"
-	util "github.com/alibabacloud-go/tea-utils/v2/service"
+	al_openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
+	al_swas_open "github.com/alibabacloud-go/swas-open-20200601/client"
+	al_util "github.com/alibabacloud-go/tea-utils/v2/service"
 	"github.com/alibabacloud-go/tea/tea"
 )
 
@@ -208,11 +208,11 @@ func QCcvmMain(configData Config, ip string) {
 		configData.SecretId,
 		configData.SecretKey,
 	)
-	rules := QCsgGetRules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion)
-	res, needUpdate := QCsgMatch(rules, ip, configData)
+	rules := QCcvmGetRules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion)
+	res, needUpdate := QCcvmMatch(rules, ip, configData)
 	if needUpdate {
 		fmt.Printf("IP is different, start updating\n")
-		QCsgModifyRules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
+		QCcvmModifyRules(credential, configData.SecurityGroupId, configData.SecurityGroupRegion, res)
 		fmt.Printf("Successfully modified the firewall rules\n")
 		if EnableWinNotify {
 			notify("QCIP | Success", "Successfully modified the firewall rules", true)
@@ -481,7 +481,7 @@ func QClhModifyRules(credential *common.Credential, InstanceRegion string, Insta
 }
 
 // 腾讯云云服务器安全组部分
-func QCsgGetRules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string) *qc_vpc.SecurityGroupPolicySet {
+func QCcvmGetRules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string) *qc_vpc.SecurityGroupPolicySet {
 	cpf := profile.NewClientProfile()
 	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
@@ -497,7 +497,7 @@ func QCsgGetRules(credential *common.Credential, SecurityGroupId string, Securit
 	return response.Response.SecurityGroupPolicySet
 }
 
-func QCsgMatch(rules *qc_vpc.SecurityGroupPolicySet, ip string, config Config) (*qc_vpc.SecurityGroupPolicySet, bool) {
+func QCcvmMatch(rules *qc_vpc.SecurityGroupPolicySet, ip string, config Config) (*qc_vpc.SecurityGroupPolicySet, bool) {
 	needUpdate := false
 	for a := range rules.Ingress {
 		for b := range config.Rules {
@@ -514,14 +514,14 @@ func QCsgMatch(rules *qc_vpc.SecurityGroupPolicySet, ip string, config Config) (
 	return rules, needUpdate
 }
 
-func QCsgModifyRules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string, rules *qc_vpc.SecurityGroupPolicySet) {
+func QCcvmModifyRules(credential *common.Credential, SecurityGroupId string, SecurityGroupRegion string, rules *qc_vpc.SecurityGroupPolicySet) {
 	cpf := profile.NewClientProfile()
 	cpf.NetworkFailureMaxRetries = 3
 	cpf.HttpProfile.Endpoint = "vpc.tencentcloudapi.com"
 	client, _ := qc_vpc.NewClient(credential, SecurityGroupRegion, cpf)
 	request := qc_vpc.NewModifySecurityGroupPoliciesRequest()
 	request.SecurityGroupId = common.StringPtr(SecurityGroupId)
-	request.SecurityGroupPolicySet = QCsgProcessRules(rules)
+	request.SecurityGroupPolicySet = QCcvmProcessRules(rules)
 	_, err := client.ModifySecurityGroupPolicies(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		errOutput("Error while modifying rules for security group:")
@@ -530,7 +530,7 @@ func QCsgModifyRules(credential *common.Credential, SecurityGroupId string, Secu
 	}
 }
 
-func QCsgProcessRules(rules *qc_vpc.SecurityGroupPolicySet) *qc_vpc.SecurityGroupPolicySet {
+func QCcvmProcessRules(rules *qc_vpc.SecurityGroupPolicySet) *qc_vpc.SecurityGroupPolicySet {
 	for i := range rules.Ingress {
 		rules.Ingress[i].PolicyIndex = nil
 	}
@@ -565,8 +565,8 @@ func replaceEmptyValue(ptrRules interface{}) interface{} {
 }
 
 // 阿里云部分
-func ALCreateClient(accessKeyId *string, accessKeySecret *string) (_result *swas_open20200601.Client, _err error) {
-	config := &openapi.Config{
+func ALCreateClient(accessKeyId *string, accessKeySecret *string) (_result *al_swas_open.Client, _err error) {
+	config := &al_openapi.Config{
 		// 必填，您的 AccessKey ID
 		AccessKeyId: accessKeyId,
 		// 必填，您的 AccessKey Secret
@@ -574,8 +574,8 @@ func ALCreateClient(accessKeyId *string, accessKeySecret *string) (_result *swas
 	}
 	// Endpoint 请参考 https://api.aliyun.com/product/SWAS-OPEN
 	config.Endpoint = tea.String("swas.cn-hongkong.aliyuncs.com")
-	_result = &swas_open20200601.Client{}
-	_result, _err = swas_open20200601.NewClient(config)
+	_result = &al_swas_open.Client{}
+	_result, _err = al_swas_open.NewClient(config)
 	return _result, _err
 }
 
@@ -600,12 +600,12 @@ func ALlhMain(configData Config, ip string) {
 	}
 }
 
-func ALlhGetRules(client *swas_open20200601.Client, InstanceRegion string, InstanceId string) []*swas_open20200601.ListFirewallRulesResponseBodyFirewallRules {
-	listFirewallRulesRequest := &swas_open20200601.ListFirewallRulesRequest{
+func ALlhGetRules(client *al_swas_open.Client, InstanceRegion string, InstanceId string) []*al_swas_open.ListFirewallRulesResponseBodyFirewallRules {
+	listFirewallRulesRequest := &al_swas_open.ListFirewallRulesRequest{
 		RegionId:   tea.String(InstanceRegion),
 		InstanceId: tea.String(InstanceId),
 	}
-	runtime := &util.RuntimeOptions{}
+	runtime := &al_util.RuntimeOptions{}
 	resp, err := client.ListFirewallRulesWithOptions(listFirewallRulesRequest, runtime)
 	if err != nil {
 		panic(err)
@@ -613,9 +613,9 @@ func ALlhGetRules(client *swas_open20200601.Client, InstanceRegion string, Insta
 	return resp.Body.FirewallRules
 }
 
-func ALlhMatch(rules []*swas_open20200601.ListFirewallRulesResponseBodyFirewallRules, ip string, config Config) ([]*swas_open20200601.ListFirewallRulesResponseBodyFirewallRules, bool) {
+func ALlhMatch(rules []*al_swas_open.ListFirewallRulesResponseBodyFirewallRules, ip string, config Config) ([]*al_swas_open.ListFirewallRulesResponseBodyFirewallRules, bool) {
 	needUpdate := false
-	newRules := make([]*swas_open20200601.ListFirewallRulesResponseBodyFirewallRules, 0)
+	newRules := make([]*al_swas_open.ListFirewallRulesResponseBodyFirewallRules, 0)
 	for a := range rules {
 		for b := range config.Rules {
 			if *rules[a].Remark == config.Rules[b] {
@@ -632,9 +632,9 @@ func ALlhMatch(rules []*swas_open20200601.ListFirewallRulesResponseBodyFirewallR
 	return newRules, needUpdate
 }
 
-func ALlhModifyRules(client *swas_open20200601.Client, InstanceRegion string, InstanceId string, rules []*swas_open20200601.ListFirewallRulesResponseBodyFirewallRules) {
+func ALlhModifyRules(client *al_swas_open.Client, InstanceRegion string, InstanceId string, rules []*al_swas_open.ListFirewallRulesResponseBodyFirewallRules) {
 	for _, rule := range rules {
-		modifyFirewallRuleRequest := &swas_open20200601.ModifyFirewallRuleRequest{
+		modifyFirewallRuleRequest := &al_swas_open.ModifyFirewallRuleRequest{
 			InstanceId:   tea.String(InstanceId),
 			RegionId:     tea.String(InstanceRegion),
 			RuleId:       tea.String(*rule.RuleId),
@@ -643,7 +643,7 @@ func ALlhModifyRules(client *swas_open20200601.Client, InstanceRegion string, In
 			SourceCidrIp: tea.String(*rule.SourceCidrIp),
 			Remark:       tea.String(*rule.Remark),
 		}
-		runtime := &util.RuntimeOptions{}
+		runtime := &al_util.RuntimeOptions{}
 		_, err := client.ModifyFirewallRuleWithOptions(modifyFirewallRuleRequest, runtime)
 		if err != nil {
 			errOutput("Error while fetching rules for lighthouse:")
